@@ -1,0 +1,9 @@
+{
+  "name": "@sololearning/types",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./tsconfig.json": "./tsconfig.json"
+  },
+  "scripts": {}
+}
