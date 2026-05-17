@@ -5,8 +5,8 @@
 - [x] **TODO 0.1 — Initialize Monorepo**
   - _Current State_: Converted Next.js app to Turborepo monorepo structure. Next.js app is now in `apps/web`.
 - [x] **TODO 0.2 — Configure Shared Tooling** (ESLint, Prettier, Husky, tsconfig, etc.)
-- [ ] **TODO 0.3 — Docker Setup** (Next.js, Express, PostgreSQL, Redis)
-- [ ] **TODO 0.4 — Environment Management** (.env.example, validation, shared config)
+- [x] **TODO 0.3 — Docker Setup** (Next.js, Express, PostgreSQL, Redis)
+- [x] **TODO 0.4 — Environment Management** (.env.example, validation, shared config)
 - [ ] **TODO 0.5 — GitHub Actions** (lint, typecheck, tests, Docker build)
 
 ## Phase 1 — Authentication & Core Layout
