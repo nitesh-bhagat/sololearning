@@ -1,0 +1,38 @@
+.track {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-full);
+  height: 16px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  right: 8px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-full);
+}
+
+.primary {
+  background-color: var(--color-primary);
+}
+
+.secondary {
+  background-color: var(--color-secondary);
+}
+
+.warning {
+  background-color: var(--color-warning);
+}

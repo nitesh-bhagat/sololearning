@@ -7,21 +7,21 @@
 - [x] **TODO 0.2 — Configure Shared Tooling** (ESLint, Prettier, Husky, tsconfig, etc.)
 - [x] **TODO 0.3 — Docker Setup** (Next.js, Express, PostgreSQL, Redis)
 - [x] **TODO 0.4 — Environment Management** (.env.example, validation, shared config)
-- [ ] **TODO 0.5 — GitHub Actions** (lint, typecheck, tests, Docker build)
+- [ ] **TODO 0.5 — GitHub Actions** (Skipped for now, solo development)
 
 ## Phase 1 — Authentication & Core Layout
 
-- [ ] TODO 1.1 — Next.js App Router Setup
-- [ ] TODO 1.2 — Design System Setup
-- [ ] TODO 1.3 — Theme System
-- [ ] TODO 1.4 — Authentication Backend
-- [ ] TODO 1.5 — Frontend Auth Flow
-- [ ] TODO 1.6 — User Profile Model
+- [x] TODO 1.1 — Next.js App Router Setup
+- [x] TODO 1.2 — Design System Setup
+- [x] TODO 1.3 — Theme System
+- [x] TODO 1.4 — Authentication Backend
+- [x] TODO 1.5 — Frontend Auth Flow
+- [x] TODO 1.6 — User Profile Model
 
 ## Phase 2 — Course & Roadmap System
 
-- [ ] TODO 2.1 — Course Database Schema
-- [ ] TODO 2.2 — Course APIs
+- [x] TODO 2.1 — Course Database Schema
+- [x] TODO 2.2 — Course APIs
 - [ ] TODO 2.3 — Roadmap Rendering Engine
 - [ ] TODO 2.4 — Lesson Engine
 - [ ] TODO 2.5 — Progress Tracking

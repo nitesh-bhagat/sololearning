@@ -96,7 +96,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   background-color: var(--bg-secondary);
 }
 
@@ -116,7 +118,7 @@
 .completed {
   background-color: var(--completed-bg);
   border: 2px solid var(--completed-border);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 .completed .levelNumber {
   color: var(--text-color);
@@ -125,7 +127,7 @@
 .current {
   background-color: var(--current-bg);
   border: 3px solid var(--current-border);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 .current .levelNumber {
   color: var(--text-color);
@@ -150,7 +152,7 @@
   border-radius: 12px;
   border: 1px solid var(--border-color);
   font-size: 0.7rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Sidebar for Social Features */
@@ -169,7 +171,7 @@
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     z-index: 10;
   }
 }

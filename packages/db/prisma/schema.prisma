@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  avatar       String?
+  xp           Int      @default(0)
+  streak       Int      @default(0)
+  rank         String   @default("Newbie")
+  badges       String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  progress     UserProgress[]
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  title       String   @unique
+  description String
+  icon        String?  // Emoji or URL
+  courses     Course[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Course {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  subjectId   String
+  subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chapters    Chapter[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Chapter {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  order       Int      // For sequencing chapters (e.g. 1, 2, 3)
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  topics      Topic[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Topic {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  order       Int      // For sequencing topics within a chapter
+  xpReward    Int      @default(50)
+  chapterId   String
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  progress    UserProgress[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  title       String
+  order       Int      // Sequencing of lessons within a topic
+  content     Json     // JSON array of interactive steps/questions
+  xpReward    Int      @default(10)
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Tracks which topics a user has unlocked/completed
+model UserProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  isCompleted Boolean  @default(false)
+  isUnlocked  Boolean  @default(false) // Whether they reached this node on the roadmap
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, topicId])
+}

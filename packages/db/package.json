@@ -1,0 +1,23 @@
+{
+  "name": "@sololearning/db",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint \"src/**/*.ts\"",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0"
+  },
+  "devDependencies": {
+    "@sololearning/eslint-config": "*",
+    "@sololearning/types": "*",
+    "prisma": "^5.14.0",
+    "typescript": "^5.4.5"
+  }
+}
