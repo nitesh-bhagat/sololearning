@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { setUser } from '../../../store/slices/authSlice';
-import { Card, Button } from '@sololearning/ui';
+import { Card, Button, Skeleton, EmptyState } from '@sololearning/ui';
+import { useToast } from '../../../components/ToastProvider';
+import { User } from 'lucide-react';
 
 // Simple preset avatars to choose from (emojis to avoid asset management for MVP)
 const AVATAR_PRESETS = ['🤖', '🦊', '👽', '👻', '🐱', '🐼', '🦄', '🧙‍♂️'];
@@ -13,22 +15,33 @@ export default function ProfilePage() {
   const { user, isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
+  const toast = useToast();
 
   if (isLoading) {
-    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading profile...</div>;
+    return (
+      <div
+        className="animate-fade-in"
+        style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto' }}
+      >
+        <Skeleton height="150px" borderRadius="16px" style={{ marginBottom: '24px' }} />
+        <Skeleton height="300px" borderRadius="16px" />
+      </div>
+    );
   }
 
   if (!isAuthenticated || !user) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h1>Please Login to View Your Profile</h1>
-        <Button
-          variant="primary"
-          style={{ marginTop: '20px' }}
-          onClick={() => (window.location.href = '/login')}
-        >
-          Go to Login
-        </Button>
+      <div style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto' }}>
+        <EmptyState
+          icon={<User size={32} />}
+          title="Login Required"
+          description="Please login to view and manage your profile."
+          action={
+            <Button variant="primary" onClick={() => (window.location.href = '/login')}>
+              Go to Login
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -45,9 +58,12 @@ export default function ProfilePage() {
         const data = await res.json();
         dispatch(setUser(data.user));
         setIsEditingAvatar(false);
+        toast.success('Avatar updated successfully!');
+      } else {
+        toast.error('Failed to update avatar.');
       }
     } catch (err) {
-      console.error('Failed to update avatar', err);
+      toast.error('Network error updating avatar.');
     }
   };
 

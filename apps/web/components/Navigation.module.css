@@ -1,11 +1,11 @@
-/* Mobile TopBar */
 .topbar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: var(--topbar-height);
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(24, 24, 27, 0.95);
+  /* Matches --color-surface with opacity */
   backdrop-filter: blur(8px);
   display: flex;
   justify-content: space-between;
@@ -70,7 +70,8 @@
   transition: color 0.2s;
 }
 
-.navItem:hover, .navItem.active {
+.navItem:hover,
+.navItem.active {
   color: var(--primary-color);
 }
 
@@ -110,14 +111,15 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 6px;
   border-radius: 12px;
   color: var(--text-secondary);
   font-weight: 600;
   transition: all 0.2s;
 }
 
-.desktopNavItem:hover, .desktopNavItem.active {
+.desktopNavItem:hover,
+.desktopNavItem.active {
   background-color: var(--secondary-color);
   color: var(--primary-color);
 }
@@ -130,7 +132,6 @@
 
 .mainContent {
   flex: 1;
-  padding-top: var(--topbar-height);
   padding-bottom: var(--nav-height);
   width: 100%;
 }
@@ -140,18 +141,19 @@
   .topbar {
     display: none;
   }
-  
+
   .bottomNav {
     display: none;
   }
-  
+
   .desktopNav {
     display: flex;
   }
-  
+
   .mainContent {
     padding-top: 0;
     padding-bottom: 0;
-    margin-left: 250px; /* Offset for desktop nav */
+    margin-left: 250px;
+    /* Offset for desktop nav */
   }
 }

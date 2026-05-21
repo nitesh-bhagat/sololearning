@@ -20,9 +20,7 @@ export default function Home() {
         {subjects.map((subject) => (
           <Link href={`/map/${subject.id}`} key={subject.id}>
             <div className={`${styles.card} ${styles[`card${subject.theme}`]}`}>
-              <div className={styles.iconWrapper}>
-                {subject.icon}
-              </div>
+              <div className={styles.iconWrapper}>{subject.icon}</div>
               <div className={styles.cardContent}>
                 <h2 className={styles.cardTitle}>{subject.name}</h2>
                 <span className={styles.cardSubtitle}>{subject.subtitle}</span>

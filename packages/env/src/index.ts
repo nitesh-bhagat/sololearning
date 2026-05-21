@@ -1,18 +1,16 @@
-import { createEnv } from '@t3-oss/env-core';
 import { z } from 'zod';
+import dotenv from 'dotenv';
+import path from 'path';
 
-export const env = createEnv({
-  server: {
-    DATABASE_URL: z.string().url(),
-    REDIS_URL: z.string().url(),
-    PORT: z.coerce.number().default(4000),
-    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    JWT_SECRET: z.string().min(1),
-  },
-  clientPrefix: 'NEXT_PUBLIC_',
-  client: {
-    NEXT_PUBLIC_API_URL: z.string().url(),
-  },
-  runtimeEnv: process.env,
-  emptyStringAsUndefined: true,
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
+
+const envSchema = z.object({
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url().optional(),
+  PORT: z.coerce.number().default(4000),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  JWT_SECRET: z.string().min(1),
+  NEXT_PUBLIC_API_URL: z.string().url().optional(),
 });
+
+export const env = envSchema.parse(process.env);

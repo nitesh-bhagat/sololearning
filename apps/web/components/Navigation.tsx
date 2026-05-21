@@ -8,12 +8,25 @@ import { RootState } from '../store';
 import { setUser, setLoading, logoutUser } from '../store/slices/authSlice';
 import styles from './Navigation.module.css';
 import { Button } from '@sololearning/ui';
-import { Home, Map as MapIcon, Search, User as UserIcon, Flame, LogOut } from 'lucide-react';
+import {
+  Home,
+  Map as MapIcon,
+  Search,
+  User as UserIcon,
+  Flame,
+  LogOut,
+  Trophy,
+  Swords,
+  Shield,
+  Bell,
+} from 'lucide-react';
 
 const navLinks = [
   { href: '/', label: 'Home', icon: Home, exact: true },
   { href: '/map/python', label: 'Learn', icon: MapIcon },
-  { href: '/search', label: 'Search', icon: Search },
+  { href: '/arena', label: 'Arena', icon: Swords },
+  { href: '/leaderboard', label: 'Rankings', icon: Trophy },
+  { href: '/notifications', label: 'Notifications', icon: Bell },
   { href: '/profile', label: 'Profile', icon: UserIcon },
 ];
 
@@ -21,6 +34,11 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const dispatch = useDispatch();
   const { user, isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
+
+  const visibleNavLinks = [...navLinks];
+  if (user && user.role === 'ADMIN') {
+    visibleNavLinks.push({ href: '/admin', label: 'Admin', icon: Shield });
+  }
 
   // Fetch session on mount
   useEffect(() => {
@@ -63,32 +81,13 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={styles.layoutWrapper}>
-      {/* Mobile TopBar */}
-      <header className={styles.topbar}>
-        {isAuthenticated && user ? (
-          <Link href="/profile">
-            <div className={styles.avatar}>{user.username.charAt(0).toUpperCase()}</div>
-          </Link>
-        ) : (
-          <Link href="/login" style={{ textDecoration: 'none' }}>
-            <span style={{ fontSize: '14px', color: 'var(--color-primary)', fontWeight: 'bold' }}>
-              Login
-            </span>
-          </Link>
-        )}
-        <div style={{ fontWeight: 800, color: 'var(--color-text)' }}>SoloLearning</div>
-        {isAuthenticated && (
-          <button onClick={handleLogout} className={styles.iconBtn} style={{ fontSize: '12px' }}>
-            Logout
-          </button>
-        )}
-      </header>
+      {/* Mobile TopBar Removed */}
 
       {/* Desktop Navigation */}
       <nav className={styles.desktopNav}>
         <div className={styles.desktopLogo}>SoloLearning</div>
         <div className={styles.desktopNavList}>
-          {navLinks.map((link) => {
+          {visibleNavLinks.map((link) => {
             const isActive = link.exact ? pathname === link.href : pathname?.startsWith(link.href);
             const Icon = link.icon;
             return (
@@ -217,7 +216,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Navigation */}
       <nav className={styles.bottomNav}>
-        {navLinks.map((link) => {
+        {visibleNavLinks.map((link) => {
           const isActive = link.exact ? pathname === link.href : pathname?.startsWith(link.href);
           const Icon = link.icon;
           return (

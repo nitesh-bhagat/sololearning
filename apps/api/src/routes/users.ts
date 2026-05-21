@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { prisma } from '@sololearning/db';
+import { cacheMiddleware } from '../middlewares/cache.middleware';
 
 const router = Router();
 
@@ -37,5 +38,35 @@ router.put('/profile', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
+
+// GET /api/users/leaderboard
+// Returns top 10 users ranked by XP
+router.get(
+  '/leaderboard',
+  cacheMiddleware(300, 'leaderboard:'),
+  async (req: Request, res: Response) => {
+    try {
+      const topUsers = await prisma.user.findMany({
+        take: 10,
+        orderBy: {
+          xp: 'desc',
+        },
+        select: {
+          id: true,
+          username: true,
+          avatar: true,
+          xp: true,
+          rank: true,
+          streak: true,
+        },
+      });
+
+      res.json(topUsers);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
+  },
+);
 
 export { router as usersRouter };

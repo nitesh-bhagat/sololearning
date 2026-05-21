@@ -1,0 +1,121 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 100px;
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.roadmapPath {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px; /* Needs to be wide enough for the snake curve */
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.nodesContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px; /* Vertical spacing between nodes */
+  z-index: 1;
+  width: 100%;
+  padding-top: 40px;
+}
+
+.nodeWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nodeButton {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* State Styles */
+.locked .nodeButton {
+  background-color: var(--color-surface);
+  box-shadow: 0 6px 0 0 var(--color-border);
+  cursor: not-allowed;
+}
+
+.unlocked .nodeButton {
+  background-color: var(--color-primary);
+  box-shadow: 0 6px 0 0 var(--color-primary-shadow);
+  animation: pulse 2s infinite;
+}
+
+.completed .nodeButton {
+  background-color: var(--color-warning); /* Gold color for complete */
+  box-shadow: 0 6px 0 0 #d97706; /* Darker gold shadow */
+}
+
+/* Active depression effect */
+.nodeButton:active:not(:disabled) {
+  transform: translateY(6px) !important;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0) !important;
+}
+
+.nodeLabel {
+  position: absolute;
+  top: 100%;
+  margin-top: 15px;
+  background-color: var(--color-surface);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  border: 2px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.nodeWrapper:hover .nodeLabel {
+  opacity: 1;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow:
+      0 6px 0 0 var(--color-primary-shadow),
+      0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow:
+      0 6px 0 0 var(--color-primary-shadow),
+      0 0 0 15px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow:
+      0 6px 0 0 var(--color-primary-shadow),
+      0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}

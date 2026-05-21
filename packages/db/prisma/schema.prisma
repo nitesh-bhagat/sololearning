@@ -19,9 +19,40 @@ model User {
   badges       String[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  role         String   @default("USER")
   
   // Relations
   progress     UserProgress[]
+  friendships  Friendship[]   @relation("UserFriendships")
+  friendOf     Friendship[]   @relation("FriendToUser")
+  activities   Activity[]
+
+  @@index([xp(sort: Desc)])
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friendId  String
+  friend    User     @relation("FriendToUser", fields: [friendId], references: [id], onDelete: Cascade)
+  status    String   @default("PENDING") // PENDING, ACCEPTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, friendId])
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // e.g., "LESSON_COMPLETED", "RANK_UP", "STREAK_MILESTONE"
+  content   String   // Human readable activity text
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Subject {
@@ -97,4 +128,5 @@ model UserProgress {
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, topicId])
+  @@index([userId])
 }

@@ -3,6 +3,7 @@
 # Purpose
 
 This document defines:
+
 - engineering execution phases,
 - implementation priorities,
 - AI-agent workflows,
@@ -10,6 +11,7 @@ This document defines:
 - and architecture sequencing
 
 for building SoloLearning using:
+
 - Next.js,
 - Express.js,
 - PostgreSQL,
@@ -25,6 +27,7 @@ for building SoloLearning using:
 ## Core Principle
 
 AI should accelerate:
+
 - boilerplate,
 - repetitive tasks,
 - scaffolding,
@@ -32,6 +35,7 @@ AI should accelerate:
 - documentation.
 
 Humans should control:
+
 - architecture,
 - realtime logic,
 - security,
@@ -42,13 +46,13 @@ Humans should control:
 
 # AI Tool Roles
 
-| Tool | Responsibility |
-|---|---|
-| Cursor | Implementation & refactoring |
-| Claude | Architecture & reasoning |
-| ChatGPT | Planning & documentation |
-| v0 | UI scaffolding |
-| GitHub Copilot | Inline autocomplete |
+| Tool           | Responsibility               |
+| -------------- | ---------------------------- |
+| Cursor         | Implementation & refactoring |
+| Claude         | Architecture & reasoning     |
+| ChatGPT        | Planning & documentation     |
+| v0             | UI scaffolding               |
+| GitHub Copilot | Inline autocomplete          |
 
 ---
 
@@ -510,3 +514,4 @@ modern UX,
 realtime gameplay,
 social progression,
 and addictive learning loops.
+```

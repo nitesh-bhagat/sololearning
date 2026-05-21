@@ -9,6 +9,7 @@ interface User {
   streak?: number;
   rank?: string;
   badges?: string[];
+  role?: string;
 }
 
 interface AuthState {
@@ -40,9 +41,24 @@ export const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
+    updateUserXP: (state, action: PayloadAction<number>) => {
+      if (state.user) {
+        state.user.xp = (state.user.xp || 0) + action.payload;
+      }
+    },
+    updateUserStats: (
+      state,
+      action: PayloadAction<{ xp: number; rank: string; streak: number }>,
+    ) => {
+      if (state.user) {
+        state.user.xp = action.payload.xp;
+        state.user.rank = action.payload.rank;
+        state.user.streak = action.payload.streak;
+      }
+    },
   },
 });
 
-export const { setUser, logoutUser, setLoading } = authSlice.actions;
+export const { setUser, logoutUser, setLoading, updateUserXP, updateUserStats } = authSlice.actions;
 
 export default authSlice.reducer;

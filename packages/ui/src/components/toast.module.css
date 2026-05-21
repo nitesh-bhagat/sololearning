@@ -1,0 +1,88 @@
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border-left: 4px solid transparent;
+  min-width: 300px;
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.toastEnter {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toastExit {
+  animation: fadeOutRight 0.3s ease-in forwards;
+}
+
+.success {
+  border-left-color: #10b981;
+}
+.success .icon {
+  color: #10b981;
+}
+
+.error {
+  border-left-color: #ef4444;
+}
+.error .icon {
+  color: #ef4444;
+}
+
+.info {
+  border-left-color: #3b82f6;
+}
+.info .icon {
+  color: #3b82f6;
+}
+
+.message {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: var(--color-text);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

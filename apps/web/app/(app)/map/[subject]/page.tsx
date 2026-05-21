@@ -1,70 +1,48 @@
 'use client';
-import { useMemo, useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import styles from './map.module.css';
-
-// Mock Data
-const subjectData = {
-  python: { title: 'Python Basics', levels: 15, currentLevel: 5 },
-  cs: { title: 'CS Fundamentals', levels: 10, currentLevel: 2 },
-  math: { title: 'Mathematics', levels: 20, currentLevel: 12 },
-  physics: { title: 'Physics', levels: 12, currentLevel: 1 },
-};
-
-const friends = [
-  { id: 1, name: 'Alex', avatar: 'A', level: 6 },
-  { id: 2, name: 'Sam', avatar: 'S', level: 3 },
-  { id: 3, name: 'Jo', avatar: 'J', level: 8 },
-];
+import { Roadmap } from '../../../../components/roadmap/Roadmap';
 
 export default function MapPage() {
   const params = useParams();
-  const subjectId = (params.subject as string) || 'python';
-  const data = subjectData[subjectId as keyof typeof subjectData] || subjectData.python;
+  const subjectId = params.subject as string;
 
-  const [showInviteModal, setShowInviteModal] = useState(false);
+  // In a real app, we would fetch the courseId based on the subject slug.
+  // For this MVP, we seeded a Python course with a specific UUID.
+  // We will just hardcode the seeded course ID for demonstration.
+  const COURSE_ID = '994594a4-7854-4e84-8b11-f9f27510fa7a';
 
-  // Generate levels data and path coordinates
-  const { levels, pathData } = useMemo(() => {
-    const arr = [];
-    const points = [];
-    const nodeSpacingY = 120; // Reduced spacing for mobile
-    const amplitude = 80; // Reduced curve width for mobile
+  const [friends, setFriends] = useState<any[]>([]);
+  const [friendsProgress, setFriendsProgress] = useState<any[]>([]);
 
-    const totalHeight = data.levels * nodeSpacingY;
+  useEffect(() => {
+    const fetchSocialData = async () => {
+      try {
+        // Fetch active friends
+        const friendsRes = await fetch('/api/friends', { credentials: 'include' });
+        if (friendsRes.ok) {
+          const friendsData = await friendsRes.json();
+          setFriends(friendsData.friends || []);
+        }
 
-    for (let i = 0; i < data.levels; i++) {
-      let status = 'locked';
-      if (i + 1 < data.currentLevel) status = 'completed';
-      if (i + 1 === data.currentLevel) status = 'current';
+        // Fetch friends' course progress
+        const progressRes = await fetch(`/api/friends/progress/${COURSE_ID}`, {
+          credentials: 'include',
+        });
+        if (progressRes.ok) {
+          const progressData = await progressRes.json();
+          setFriendsProgress(progressData || []);
+        }
+      } catch (err) {
+        console.error('Error fetching social/progress data:', err);
+      }
+    };
 
-      const xOffset = Math.sin((i / 2) * Math.PI) * amplitude;
-
-      arr.push({
-        id: i + 1,
-        status,
-        x: xOffset,
-        stars: status === 'completed' ? (i % 3) + 1 : 0,
-      });
-
-      // Center at 250px (assuming max width 500)
-      const y = totalHeight - i * nodeSpacingY - 40;
-      const x = 250 + xOffset;
-      points.push(`${x},${y}`);
-    }
-
-    let d = `M ${points[0]}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1].split(',');
-      const curr = points[i].split(',');
-      const cp1y = parseInt(prev[1]) - nodeSpacingY / 2;
-      const cp2y = parseInt(curr[1]) + nodeSpacingY / 2;
-      d += ` C ${prev[0]},${cp1y} ${curr[0]},${cp2y} ${curr[0]},${curr[1]}`;
-    }
-
-    return { levels: arr, pathData: d };
-  }, [data.levels, data.currentLevel]);
+    fetchSocialData();
+  }, [COURSE_ID]);
 
   return (
     <div className={styles.mapContainer}>
@@ -72,7 +50,9 @@ export default function MapPage() {
         <Link href="/">
           <div className={styles.backButton}>← Back</div>
         </Link>
-        <h1 className={styles.title}>{data.title}</h1>
+        <h1 className={styles.title}>
+          {subjectId.charAt(0).toUpperCase() + subjectId.slice(1)} Path
+        </h1>
         <div style={{ width: '60px' }}></div>
       </header>
 
@@ -82,145 +62,42 @@ export default function MapPage() {
           Community <span>👥</span>
         </h2>
         <div className={styles.friendList}>
-          {friends.map((f) => (
-            <div key={f.id} className={styles.friend}>
-              <div className={styles.avatar}>{f.avatar}</div>
-              <div>
-                <strong style={{ color: 'var(--text-color)' }}>{f.name}</strong>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  Level {f.level}
+          {friends.length === 0 ? (
+            <div style={{ padding: '10px 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              No friends active yet. Go to{' '}
+              <Link
+                href="/social"
+                style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}
+              >
+                Social Hub
+              </Link>{' '}
+              to add some!
+            </div>
+          ) : (
+            friends.map((f) => (
+              <div key={f.id} className={styles.friend}>
+                <div className={styles.avatar}>
+                  {f.avatar || f.username.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <strong style={{ color: 'var(--text-color)' }}>{f.username}</strong>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    🛡️ {f.rank} • ⭐ {f.xp || 0}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
-        <button className={styles.inviteBtn} onClick={() => setShowInviteModal(true)}>
-          Invite Friends
-        </button>
+        <Link href="/social" style={{ width: '100%' }}>
+          <button className={styles.inviteBtn}>Manage Friends</button>
+        </Link>
       </aside>
 
-      <div className={styles.levelsWrapper} style={{ height: data.levels * 120 }}>
-        {/* Winding Path SVG */}
-        <svg
-          className={styles.pathSvg}
-          viewBox={`0 0 500 ${data.levels * 120}`}
-          preserveAspectRatio="none"
-        >
-          <path d={pathData} className={styles.pathLine} />
-        </svg>
-
-        {levels.map((level) => (
-          <div
-            key={level.id}
-            className={`${styles.levelNode} ${styles[level.status]}`}
-            style={{ transform: `translateX(${level.x}px)` }}
-          >
-            <span className={styles.levelNumber}>{level.id}</span>
-            {level.status === 'completed' && (
-              <div className={styles.stars}>{'★'.repeat(level.stars)}</div>
-            )}
-
-            {/* Friends avatars at this level */}
-            {friends
-              .filter((f) => f.level === level.id)
-              .map((f, index) => (
-                <div
-                  key={f.id}
-                  style={{
-                    position: 'absolute',
-                    top: '-10px',
-                    right: index * -15 - 10 + 'px',
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.6rem',
-                    fontWeight: '600',
-                    color: 'var(--text-color)',
-                    zIndex: 3,
-                  }}
-                >
-                  {f.avatar}
-                </div>
-              ))}
-          </div>
-        ))}
+      {/* The Real Roadmap Component connected to our API */}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <Roadmap courseId={COURSE_ID} friendsProgress={friendsProgress} />
       </div>
-
-      {/* Simple Invite Modal */}
-      {showInviteModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <div
-            style={{
-              background: 'var(--bg-secondary)',
-              padding: '2rem',
-              borderRadius: '16px',
-              textAlign: 'center',
-              maxWidth: '400px',
-              width: '90%',
-              border: '1px solid var(--border-color)',
-            }}
-          >
-            <h2 style={{ color: 'var(--text-color)' }}>Invite to {data.title}</h2>
-            <p style={{ margin: '1rem 0', color: 'var(--text-secondary)' }}>
-              Share this link so friends can join your learning journey!
-            </p>
-            <input
-              type="text"
-              value="https://sololearning.app/invite/abc123xyz"
-              readOnly
-              style={{
-                width: '100%',
-                padding: '0.8rem',
-                marginBottom: '1.5rem',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                background: 'var(--bg-color)',
-                color: 'var(--text-color)',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <button
-                className={styles.inviteBtn}
-                style={{ margin: 0 }}
-                onClick={() => setShowInviteModal(false)}
-              >
-                Copy Link
-              </button>
-              <button
-                className={styles.inviteBtn}
-                style={{
-                  margin: 0,
-                  background: 'var(--bg-color)',
-                  color: 'var(--text-color)',
-                  border: '1px solid var(--border-color)',
-                }}
-                onClick={() => setShowInviteModal(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
