@@ -19,15 +19,14 @@ import {
   Swords,
   Shield,
   Bell,
+  PlayCircle,
 } from 'lucide-react';
 
 const navLinks = [
   { href: '/', label: 'Home', icon: Home, exact: true },
-  { href: '/map/python', label: 'Learn', icon: MapIcon },
-  { href: '/arena', label: 'Arena', icon: Swords },
-  { href: '/leaderboard', label: 'Rankings', icon: Trophy },
   { href: '/notifications', label: 'Notifications', icon: Bell },
-  { href: '/profile', label: 'Profile', icon: UserIcon },
+  { href: '/leaderboard', label: 'Rankings', icon: Trophy },
+  { href: '/arena', label: 'Arena', icon: Swords },
 ];
 
 export function NavigationLayout({ children }: { children: React.ReactNode }) {
@@ -85,13 +84,76 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop Navigation */}
       <nav className={styles.desktopNav}>
-        <div className={styles.desktopLogo}>SoloLearning</div>
+        {/* Continue Learning Block */}
+        <div style={{ marginBottom: '2rem', padding: '0 8px' }}>
+          <div
+            style={{
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              color: 'var(--color-text-light)',
+              textTransform: 'uppercase',
+              marginBottom: '8px',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Continue Learning
+          </div>
+          <Link href="/map/python" style={{ textDecoration: 'none' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)')
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)')
+              }
+            >
+              <PlayCircle size={36} color="var(--color-primary)" style={{ flexShrink: 0 }} />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div
+                  style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    color: 'var(--color-text)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  Variables & Data
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--color-text-light)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  Python Basics
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+
         <div className={styles.desktopNavList}>
           {visibleNavLinks.map((link) => {
             const isActive = link.exact ? pathname === link.href : pathname?.startsWith(link.href);
             const Icon = link.icon;
             return (
-              <Link href={link.href} key={link.label}>
+              <Link href={link.href} key={link.label} style={{ textDecoration: 'none' }}>
                 <div className={`${styles.desktopNavItem} ${isActive ? styles.active : ''}`}>
                   <span>
                     <Icon size={20} />
@@ -107,10 +169,13 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
         <div
           style={{
             marginTop: 'auto',
-            padding: '16px',
+            padding: '12px 8px',
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
+            position: 'sticky',
+            bottom: 0,
+            backgroundColor: 'var(--bg-secondary)',
           }}
         >
           {isLoading ? (
@@ -118,14 +183,13 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
           ) : isAuthenticated && user ? (
             <div
               style={{
-                padding: '12px',
+                padding: '8px',
                 backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid var(--color-border)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
                 borderRadius: '16px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px',
-                boxShadow: 'inset 0 2px 10px rgba(0, 0, 0, 0.1)',
+                gap: '8px',
               }}
             >
               <Link
@@ -134,7 +198,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
                   textDecoration: 'none',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
+                  gap: '10px',
                   padding: '4px',
                   borderRadius: '12px',
                   transition: 'background-color 0.2s',
@@ -142,17 +206,16 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
               >
                 <div
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
                     backgroundColor: 'var(--color-background)',
                     border: '2px solid var(--color-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '20px',
+                    fontSize: '18px',
                     flexShrink: 0,
-                    boxShadow: '0 0 10px var(--color-primary-shadow)',
                   }}
                 >
                   {user.avatar || user.username.charAt(0).toUpperCase()}
@@ -161,6 +224,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
                   <div
                     style={{
                       fontWeight: 'bold',
+                      fontSize: '0.9rem',
                       color: 'var(--color-text)',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -171,7 +235,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
                   </div>
                   <div
                     style={{
-                      fontSize: '0.85rem',
+                      fontSize: '0.8rem',
                       color: 'var(--color-warning)',
                       fontWeight: 'bold',
                       display: 'flex',
@@ -179,7 +243,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
                       gap: '4px',
                     }}
                   >
-                    <Flame size={14} color="#f97316" />{' '}
+                    <Flame size={12} color="#f97316" />{' '}
                     <span style={{ color: '#f97316' }}>{user.streak || 0}</span>
                     <span style={{ margin: '0 4px', color: 'var(--color-text-light)' }}>
                       •
@@ -192,9 +256,11 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
                 onClick={handleLogout}
                 style={{
                   width: '100%',
-                  fontSize: '0.9rem',
-                  padding: '8px',
+                  fontSize: '0.85rem',
+                  padding: '6px',
                   color: 'var(--color-text-light)',
+                  display: 'flex',
+                  justifyContent: 'flex-start',
                 }}
               >
                 <LogOut size={16} style={{ marginRight: '8px' }} />
@@ -220,7 +286,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
           const isActive = link.exact ? pathname === link.href : pathname?.startsWith(link.href);
           const Icon = link.icon;
           return (
-            <Link href={link.href} key={link.label} style={{ flex: 1 }}>
+            <Link href={link.href} key={link.label} style={{ flex: 1, textDecoration: 'none' }}>
               <div className={`${styles.navItem} ${isActive ? styles.active : ''}`}>
                 <span className={styles.navIcon}>
                   <Icon size={24} />

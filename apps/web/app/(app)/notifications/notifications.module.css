@@ -6,7 +6,8 @@
   padding: 24px;
   min-height: calc(100vh - var(--topbar-height, 64px));
   position: relative;
-  align-items: flex-start; /* Required for sticky to work correctly in flex container */
+  align-items: flex-start;
+  /* Required for sticky to work correctly in flex container */
 }
 
 .leftColumn {
@@ -15,7 +16,8 @@
   flex-direction: column;
   gap: 8px;
   position: sticky;
-  top: 88px; /* Accounts for topbar (64px) + padding (24px) */
+  top: 0px;
+  /* Accounts for topbar (64px) + padding (24px) */
   max-height: calc(100vh - 100px);
   overflow-y: auto;
 }
@@ -36,7 +38,7 @@
   flex-direction: column;
   gap: 24px;
   position: sticky;
-  top: 88px;
+  top: 0px;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
 }

@@ -1,0 +1,367 @@
+.container {
+  display: flex;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: calc(100vh - var(--topbar-height, 64px));
+  position: relative;
+  align-items: flex-start;
+}
+
+/* Base Columns */
+.leftColumn {
+  flex: 0 0 20%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 0px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-top: 24px;
+  /* Added spacing */
+}
+
+.middleColumn {
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rightColumn {
+  flex: 0 0 25%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 0px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-top: 24px;
+  /* Added spacing */
+}
+
+/* Sections & Cards */
+.sectionCard {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+/* Timeline Stepper */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.timelineItem:last-child {
+  padding-bottom: 0;
+}
+
+/* The vertical line */
+.timelineItem:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  /* Center of the 24px icon */
+  top: 24px;
+  bottom: 0;
+  width: 2px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.timelineIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-background);
+  border: 2px solid var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.timelineContent {
+  flex: 1;
+  padding-top: 2px;
+}
+
+.timelineTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.timelineDate {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Profile Header */
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatarContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--color-background);
+  border: 3px solid var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  box-shadow: 0 0 20px var(--color-primary-shadow);
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.username {
+  font-size: 2rem;
+  margin: 0 0 4px 0;
+  color: var(--color-text);
+}
+
+.rank {
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.statCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.statIcon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  color: var(--color-text);
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Streak Calendar */
+.calendarWrapper {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  min-width: max-content;
+}
+
+.calendarDay {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Color levels for calendar based on primary theme color */
+.level-1 {
+  background-color: rgba(var(--primary-rgb), 0.3);
+}
+
+.level-2 {
+  background-color: rgba(var(--primary-rgb), 0.5);
+}
+
+.level-3 {
+  background-color: rgba(var(--primary-rgb), 0.7);
+}
+
+.level-4 {
+  background-color: rgba(var(--primary-rgb), 1);
+}
+
+/* Achievements Feed */
+.achievementsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.achievementItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.achievementIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.achievementInfo {
+  flex: 1;
+}
+
+.achievementTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.achievementDesc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Right Column (Suggestions) Reused logic */
+.recommendationList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendationItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.recommendationItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.recAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(var(--primary-rgb), 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.courseIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  flex: 1;
+  overflow: hidden;
+}
+
+.itemName {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemSub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .leftColumn,
+  .rightColumn {
+    flex: 1;
+    width: 100%;
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
