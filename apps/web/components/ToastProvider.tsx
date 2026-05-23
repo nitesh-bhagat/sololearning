@@ -22,6 +22,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((type: ToastType, message: string, duration = 4000) => {
+    try {
+      let soundFile = '/sounds/notification.mp3';
+      if (type === 'success') soundFile = '/sounds/success.mp3';
+      else if (type === 'error') soundFile = '/sounds/error.mp3';
+
+      const audio = new Audio(soundFile);
+      audio.play().catch((e) => console.error('Audio play failed:', e));
+    } catch (e) {
+      // Ignore if Audio API is unavailable (e.g. server-side or blocked)
+    }
+
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, type, message, duration }]);
   }, []);

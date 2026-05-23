@@ -17,6 +17,7 @@ export const globalLimiter = rateLimit({
   },
   // Fallback to memory store if Redis is down
   skipFailedRequests: true,
+  skip: () => process.env.NODE_ENV !== 'production',
 });
 
 // Stricter rate limiter for authentication routes (login/register)
@@ -26,10 +27,12 @@ export const authLimiter = rateLimit({
   }),
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // Limit each IP to 10 login/register requests per hour
+  requestPropertyName: 'authRateLimit', // Avoids ERR_ERL_DOUBLE_COUNT conflict with globalLimiter
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     error: 'Too many authentication attempts, please try again after an hour.',
   },
   skipFailedRequests: true,
+  skip: () => process.env.NODE_ENV !== 'production',
 });

@@ -104,6 +104,45 @@ router.get('/:username', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch user' });
   }
 });
+
+// GET /api/users/:username/friends
+// Get friends of a specific user
+router.get('/:username/friends', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+
+    const targetUser = await prisma.user.findUnique({
+      where: { username },
+      select: { id: true },
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [{ userId: targetUser.id }, { friendId: targetUser.id }],
+        status: 'ACCEPTED',
+      },
+      include: {
+        user: {
+          select: { id: true, username: true, avatar: true, rank: true, xp: true, streak: true },
+        },
+        friend: {
+          select: { id: true, username: true, avatar: true, rank: true, xp: true, streak: true },
+        },
+      },
+    });
+
+    const friends = friendships.map((f) => (f.userId === targetUser.id ? f.friend : f.user));
+
+    res.json({ friends });
+  } catch (error) {
+    console.error('Error fetching user friends:', error);
+    res.status(500).json({ error: 'Failed to fetch friends' });
+  }
+});
 // GET /api/users/leaderboard
 // Returns top 10 users ranked by XP
 router.get(

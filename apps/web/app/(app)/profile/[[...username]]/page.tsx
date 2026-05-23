@@ -102,6 +102,7 @@ export default function ProfilePage() {
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
   const [displayUser, setDisplayUser] = useState<any>(null);
   const [isFetchingUser, setIsFetchingUser] = useState(false);
+  const [friendsList, setFriendsList] = useState<any[]>([]);
   const toast = useToast();
 
   const isCurrentUser = !usernameParam || usernameParam === currentUser?.username;
@@ -120,6 +121,16 @@ export default function ProfilePage() {
           followingCount: 20,
           bio: 'Lifelong learner, coding enthusiast. Always ready for a challenge!',
         });
+
+        // Fetch my friends
+        fetch('/api/friends')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.friends) {
+              setFriendsList(data.friends);
+            }
+          })
+          .catch((err) => console.error('Error fetching friends:', err));
       }
     } else if (usernameParam) {
       setIsFetchingUser(true);
@@ -133,6 +144,16 @@ export default function ProfilePage() {
           }
         })
         .finally(() => setIsFetchingUser(false));
+
+      // Fetch friends for the requested user
+      fetch(`/api/users/${usernameParam}/friends`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.friends) {
+            setFriendsList(data.friends);
+          }
+        })
+        .catch((err) => console.error('Error fetching friends:', err));
     }
   }, [usernameParam, isCurrentUser, currentUser, isAuthLoading, toast]);
 
@@ -226,30 +247,6 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      {/* Left Column: Account Timeline */}
-      <div className={styles.leftColumn}>
-        {/* Removed sectionCard class to remove container background and borders */}
-        <div>
-          <h3 className={styles.sectionTitle}>Account Timeline</h3>
-          <div className={styles.timeline}>
-            {TIMELINE_EVENTS.map((event) => {
-              const Icon = event.icon;
-              return (
-                <div key={event.id} className={styles.timelineItem}>
-                  <div className={styles.timelineIcon}>
-                    <Icon size={14} />
-                  </div>
-                  <div className={styles.timelineContent}>
-                    <p className={styles.timelineTitle}>{event.title}</p>
-                    <p className={styles.timelineDate}>{event.date}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Middle Column: Profile & Stats */}
       <div className={styles.middleColumn}>
         {/* Profile Header */}
@@ -261,7 +258,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className={styles.profileInfo}>
-              <h1 className={styles.username}>{displayUser.username}</h1>
+              <h1 className={styles.username}>@{displayUser.username}</h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
                 <div className={styles.rank}>{displayUser.rank}</div>
                 <div style={{ color: 'var(--color-text-light)', fontSize: '0.9rem' }}>
@@ -289,25 +286,41 @@ export default function ProfilePage() {
               </div>
               <div style={{ marginTop: '16px' }}>
                 {isCurrentUser ? (
-                  <Button variant="primary" onClick={() => setIsEditingAvatar(!isEditingAvatar)}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsEditingAvatar(!isEditingAvatar)}
+                  >
                     Edit Profile
                   </Button>
                 ) : (
-                  <Button
-                    variant={
-                      displayUser.friendshipStatus === 'friends' ||
-                      displayUser.friendshipStatus === 'pending_sent'
-                        ? 'secondary'
-                        : 'primary'
-                    }
-                    onClick={handleFollowToggle}
-                  >
-                    {displayUser.friendshipStatus === 'friends'
-                      ? 'Unfollow'
-                      : displayUser.friendshipStatus === 'pending_sent'
-                        ? 'Requested'
-                        : 'Follow'}
-                  </Button>
+                  <div>
+                    <Button
+                      variant={
+                        displayUser.friendshipStatus === 'friends' ||
+                        displayUser.friendshipStatus === 'pending_sent'
+                          ? 'secondary'
+                          : 'primary'
+                      }
+                      size="sm"
+                      onClick={handleFollowToggle}
+                    >
+                      <User />
+                      {displayUser.friendshipStatus === 'friends'
+                        ? 'Unfollow'
+                        : displayUser.friendshipStatus === 'pending_sent'
+                          ? 'Requested'
+                          : 'Follow'}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setIsEditingAvatar(!isEditingAvatar)}
+                    >
+                      <Swords />
+                      Challenge
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -417,24 +430,41 @@ export default function ProfilePage() {
       {/* Right Column: Recommendations */}
       <div className={styles.rightColumn}>
         <div className={styles.sectionCard}>
-          <h3 className={styles.sectionTitle}>Suggested Friends</h3>
+          <h3 className={styles.sectionTitle}>
+            {isCurrentUser ? 'My Friends' : `${displayUser?.username}'s Friends`}
+          </h3>
           <div className={styles.recommendationList}>
-            {RECOMMENDED_PEOPLE.map((person) => (
-              <Link
-                href={`/profile/${person.username}`}
-                key={person.id}
-                style={{ textDecoration: 'none' }}
-              >
-                <div className={styles.recommendationItem}>
-                  <div className={styles.recAvatar}>{person.avatar}</div>
-                  <div className={styles.itemInfo}>
-                    <p className={styles.itemName}>{person.name}</p>
-                    <p className={styles.itemSub}>{person.level}</p>
+            {friendsList.length > 0 ? (
+              friendsList.map((friend) => (
+                <Link
+                  href={`/profile/${friend.username}`}
+                  key={friend.id}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div className={styles.recommendationItem}>
+                    <div className={styles.recAvatar}>
+                      {friend.avatar || friend.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className={styles.itemInfo}>
+                      <p className={styles.itemName}>{friend.username}</p>
+                      <p className={styles.itemSub}>Rank {friend.rank || 0}</p>
+                    </div>
+                    <User size={18} style={{ color: 'var(--color-primary)' }} />
                   </div>
-                  <UserPlus size={18} style={{ color: 'var(--color-primary)' }} />
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            ) : (
+              <p
+                style={{
+                  color: 'var(--color-text-light)',
+                  fontSize: '0.9rem',
+                  padding: '16px 0',
+                  textAlign: 'center',
+                }}
+              >
+                No friends yet
+              </p>
+            )}
           </div>
         </div>
 

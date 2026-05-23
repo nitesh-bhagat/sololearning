@@ -1,0 +1,509 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(100vh - var(--topbar-height, 0px));
+  padding: 1.5rem;
+  gap: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  background-color: var(--color-background);
+}
+
+/* Row 1: Header */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 10vh;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.logoText {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  background: linear-gradient(to right, #f97316, #f43f5e);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 10px rgba(249, 115, 22, 0.2);
+}
+
+/* Row 2: Tabs */
+.tabsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.tabCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: 150px;
+  aspect-ratio: 1/1;
+  /* Makes them square */
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  padding: 0.2rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-secondary);
+  gap: 0.75rem;
+}
+
+.tabCard:hover {
+  border-color: rgba(249, 115, 22, 0.5);
+  background-color: rgba(255, 255, 255, 0.03);
+  transform: translateY(-2px);
+}
+
+.tabCard.active {
+  border-color: #f97316;
+  color: #f97316;
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0) 100%);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15);
+}
+
+.tabIcon {
+  /* Sizes controlled by React/Lucide, adding a bit of flex */
+}
+
+.tabLabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Row 3/4: Content Area */
+.contentRow {
+  flex: 1;
+  width: 80%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Horizontal Carousels */
+.carouselContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+.carouselScroll {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Hide scrollbar for clean UI */
+.carouselScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.carouselScroll {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Remove carousel buttons */
+
+/* Cards used in Carousels & Lists */
+.userCard {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: 220px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+}
+
+.userCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.avatarWrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-danger));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  border: 3px solid var(--bg-secondary);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.activeIndicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #22c55e;
+  border: 3px solid var(--bg-secondary);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.inactiveIndicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #64748b;
+  border: 3px solid var(--bg-secondary);
+  border-radius: 50%;
+}
+
+.userName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.2rem;
+}
+
+.userStatus {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  margin-bottom: 0.5rem;
+}
+
+.userStats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Request Card Specifics */
+.requestCard {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: 240px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+}
+
+.requestCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.squareAvatar {
+  width: 72px;
+  height: 72px;
+  background: white;
+  border: 4px solid #f97316;
+  /* Orange border */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #f97316;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+  margin-bottom: 0.25rem;
+}
+
+.userName {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-light);
+  margin-bottom: 0.1rem;
+}
+
+.displayName {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: white;
+  margin-top: 0;
+}
+
+.courseBadge {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+  background-color: #262626;
+  padding: 8px 16px;
+  border-radius: 8px;
+  width: 100%;
+  border: none;
+}
+
+.scoreBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #222222;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  margin: 0.25rem 0;
+}
+
+.scoreLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.scoreNumber {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+
+.scoreStatus {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.scoreWin .scoreNumber,
+.scoreWin .scoreStatus {
+  color: #4ade80;
+}
+
+.scoreLoss .scoreNumber,
+.scoreLoss .scoreStatus {
+  color: #e2755e;
+}
+
+.scoreTie .scoreNumber,
+.scoreTie .scoreStatus {
+  color: #94a3b8;
+}
+
+.actionGroup {
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+/* History Section */
+.historySection {
+  margin-top: 1rem;
+  width: 80%;
+  align-self: center;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  transition: all 0.2s;
+}
+
+.historyItem:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.historyLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.historyOpponent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.historyAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+.historyDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.historyTopic {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  margin-top: 4px;
+}
+
+.historyRight {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.historyScore {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: 2px;
+}
+
+.historyResult {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.resultWin {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.resultLoss {
+  background-color: rgba(244, 63, 94, 0.1);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.resultDraw {
+  background-color: rgba(100, 116, 139, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* Practice & Championship Lists */
+.listGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.listItem {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.listItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.listInfo h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.listInfo p {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+@media (max-width: 768px) {
+  .tabsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .contentRow {
+    padding: 1rem;
+  }
+}
