@@ -67,7 +67,7 @@ export function RoadmapNode({ title, state, index, friends = [], onClick }: Road
             <div
               style={{
                 position: 'absolute',
-                left: offset >= 0 ? '-38px' : '78px',
+                right: '-15px', // Top right corner of the lesson circle
                 top: '-15px',
                 display: 'flex',
                 alignItems: 'center',
@@ -75,50 +75,55 @@ export function RoadmapNode({ title, state, index, friends = [], onClick }: Road
               }}
             >
               {friends.map((friend) => (
-                <div
-                  key={friend.id}
-                  title={friend.username}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50% 50% 50% 0', // Location pin shape
-                    transform: 'rotate(-45deg)', // Point at the bottom
-                    backgroundColor: 'var(--color-primary)',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    marginLeft: '-8px', // Stack overlapping effect
-                    padding: '3px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.15) translateY(-4px) rotate(-45deg)';
-                    e.currentTarget.style.zIndex = '20';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'rotate(-45deg)';
-                    e.currentTarget.style.zIndex = 'auto';
-                  }}
-                >
+                <div key={friend.id} className={styles.friendPinWrapper}>
                   <div
                     style={{
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--color-surface)',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50% 50% 50% 0', // Location pin shape
+                      transform: 'rotate(-45deg)', // Point at the bottom
+                      backgroundColor: 'var(--color-primary)',
+                      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.4)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      transform: 'rotate(45deg)', // Counter-rotate the inner content
-                      color: 'var(--color-text)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      marginLeft: '-10px', // Stack overlapping effect
+                      padding: '3px',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform =
+                        'scale(1.15) translateY(-4px) rotate(-45deg)';
+                      e.currentTarget.style.zIndex = '20';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'rotate(-45deg)';
+                      e.currentTarget.style.zIndex = 'auto';
                     }}
                   >
-                    {friend.avatar || friend.username.charAt(0).toUpperCase()}
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-surface)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        transform: 'rotate(45deg)', // Counter-rotate the inner content
+                        color: 'var(--color-text)',
+                      }}
+                    >
+                      {friend.avatar || friend.username.charAt(0).toUpperCase()}
+                    </div>
                   </div>
+
+                  {/* Hover Popup */}
+                  <div className={styles.friendPopup}>{friend.username}</div>
                 </div>
               ))}
             </div>
