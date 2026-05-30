@@ -25,6 +25,10 @@ import {
   Book,
   Hash,
   MessageCircle,
+  Heart,
+  HeartIcon,
+  ZapIcon,
+  CalendarDays,
 } from 'lucide-react';
 
 const navLinks = [
@@ -79,8 +83,9 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
   };
 
   const isAuthPage = pathname === '/login' || pathname === '/register';
+  const isAdminPage = pathname?.startsWith('/admin');
 
-  if (isAuthPage) {
+  if (isAuthPage || isAdminPage) {
     return <main className="bg-background min-h-screen">{children}</main>;
   }
 
@@ -88,13 +93,53 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen">
       {/* Desktop Navigation */}
       <nav className="hidden md:flex fixed top-0 left-0 w-[20%] h-screen bg-surface border-r border-border py-8 px-4 flex-col z-50">
+        {/* stats */}
+        <div className="flex items-center justify-start gap-2 mb-4">
+          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+            <span className="text-xs">Lives</span>
+            <div className="flex flex-row gap-1 items-center font-black text-red-500">
+              <HeartIcon size={15} />
+              <span className="text-sm">2</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+            <span className="text-xs">XP</span>
+            <div className="flex flex-row gap-1 items-center font-black text-yellow-500">
+              <ZapIcon size={15} />
+              <span className="text-sm">{user?.xp || 0}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+            <span className="text-xs">Streak</span>
+            <div className="flex flex-row gap-1 items-center font-black text-orange-500">
+              <Flame size={15} />
+              <span className="text-sm">123</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+            <span className="text-xs">Mission</span>
+            <div className="flex flex-row gap-1 items-center font-black text-green-500">
+              <CalendarDays size={15} />
+              <span className="text-sm">109</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-row"></div>
         {/* Continue Learning Block */}
         <div className="mb-8 px-2">
           <div className="text-[0.8rem] font-bold text-text-light uppercase mb-2 tracking-wide">
             Continue Learning
           </div>
           <Link href="/map/python" className="no-underline">
-            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/10 transition-all duration-200 cursor-pointer hover:bg-white/10">
+            <div
+              className={`flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-b-4 transition-all duration-200 cursor-pointer hover:bg-white/10 ${
+                pathname?.includes('course') ? 'border-emerald-800' : 'border-white/10'
+              }`}
+            >
               <PlayCircle size={36} className="text-primary shrink-0" />
               <div className="flex-1 overflow-hidden">
                 <div className="text-[0.95rem] font-bold text-text whitespace-nowrap overflow-hidden text-ellipsis">
@@ -115,7 +160,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
             return (
               <Link href={link.href} key={link.label} className="no-underline">
                 <div
-                  className={`flex items-center gap-4 p-1.5 rounded-xl font-semibold transition-all duration-200 hover:text-primary/60 ${isActive ? 'bg-gray-800 text-primary' : 'text-text-light'}`}
+                  className={`flex items-center gap-4 p-1.5 rounded-lg font-semibold transition-all duration-200 hover:text-primary ${isActive ? 'bg-emerald-500 hover:text-white text-white border-b-4 border-emerald-900' : 'text-text-light'}`}
                 >
                   <span>
                     <Icon size={20} />
@@ -144,11 +189,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
                   <div className="font-bold text-[0.9rem] text-text whitespace-nowrap overflow-hidden text-ellipsis">
                     {user.username}
                   </div>
-                  <div className="text-[0.8rem] text-warning font-bold flex items-center gap-1">
-                    <Flame size={12} className="text-orange-500" />{' '}
-                    <span className="text-orange-500">{user.streak || 0}</span>
-                    <span className="mx-1 text-text-light">•</span>⭐ {user.xp || 0}
-                  </div>
+                  <span className="text-sm">some@gmail.com</span>
                 </div>
               </Link>
               <Button

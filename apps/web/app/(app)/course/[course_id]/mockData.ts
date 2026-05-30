@@ -51,7 +51,7 @@ export const MOCK_COURSE_DATA_PYTHON = {
           ],
           progress: [
             {
-              isCompleted: false,
+              isCompleted: true,
               isUnlocked: true,
             },
           ],
@@ -112,7 +112,7 @@ export const MOCK_COURSE_DATA_PYTHON = {
           ],
           progress: [
             {
-              isCompleted: false,
+              isCompleted: true,
               isUnlocked: true,
             },
           ],
@@ -193,7 +193,7 @@ export const MOCK_COURSE_DATA_PYTHON = {
           progress: [
             {
               isCompleted: false,
-              isUnlocked: true,
+              isUnlocked: false,
             },
           ],
         },
@@ -238,7 +238,7 @@ export const MOCK_COURSE_DATA_PYTHON = {
           progress: [
             {
               isCompleted: false,
-              isUnlocked: true,
+              isUnlocked: false,
             },
           ],
         },
@@ -310,7 +310,7 @@ export const MOCK_COURSE_DATA_PYTHON = {
           title: 'Getting User Input',
           content: [
             {
-              type: 'h2',
+              type: 'text',
               content: 'Programs become interactive when they can receive information from users.',
             },
             {
@@ -319,13 +319,17 @@ export const MOCK_COURSE_DATA_PYTHON = {
               explanation: 'The input() function waits for the user to type something.',
             },
             {
-              type: 'info text card',
+              type: 'heading',
+              content: 'Programs become interactive when they can receive information from users.',
+            },
+            {
+              type: 'info',
               content: 'input() always returns text data unless converted.',
             },
           ],
           excercise: [
             {
-              type: 'fill in the blanks',
+              type: 'fill_in_blank',
               question: 'The ______ function is used to collect information from users.',
               blankAnswers: ['input'],
               explanation: 'input() collects data typed by users.',
@@ -334,7 +338,7 @@ export const MOCK_COURSE_DATA_PYTHON = {
           progress: [
             {
               isCompleted: false,
-              isUnlocked: true,
+              isUnlocked: false,
             },
           ],
         },
@@ -349,11 +353,11 @@ export const MOCK_COURSE_DATA_PYTHON = {
           title: 'Arithmetic Operators',
           content: [
             {
-              type: 'h2',
+              type: 'text',
               content: 'Arithmetic operators allow programs to perform mathematical calculations.',
             },
             {
-              type: 'Table',
+              type: 'table',
               headers: ['Operator', 'Meaning'],
               rows: [
                 ['+', 'Addition'],
