@@ -38,6 +38,40 @@ router.put('/profile', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
+
+// GET /api/users/me/courses
+// Get courses the current user is enrolled in
+router.get('/me/courses', requireAuth, async (req: Request, res: Response) => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (req as any).userId;
+
+    const enrollments = await prisma.courseEnrollment.findMany({
+      where: { userId },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            image: true,
+            tags: true,
+            totalXp: true,
+          },
+        },
+      },
+      orderBy: {
+        lastActiveAt: 'desc',
+      },
+    });
+
+    const courses = enrollments.map((e) => e.course);
+    res.json(courses);
+  } catch (error) {
+    console.error('Error fetching my courses:', error);
+    res.status(500).json({ error: 'Failed to fetch my courses' });
+  }
+});
 // GET /api/users/:username
 // Get user profile by username
 router.get('/:username', requireAuth, async (req: Request, res: Response) => {

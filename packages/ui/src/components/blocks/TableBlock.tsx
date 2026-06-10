@@ -102,7 +102,7 @@ export function TableBlock({
         </div>
       </div>
 
-      <div className="w-full overflow-x-auto rounded-xl border border-border">
+      <div className="w-full rounded-xl border border-border">
         <table className="w-full text-left border-collapse min-w-[500px]">
           <thead>
             <tr className="bg-background border-b border-border">

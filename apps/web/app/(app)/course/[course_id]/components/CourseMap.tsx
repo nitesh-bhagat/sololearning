@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../../store';
 import { RoadmapNode, NodeState } from '../../../../../components/roadmap/RoadmapNode';
 
 interface CourseMapProps {
@@ -11,6 +13,7 @@ export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
   const router = useRouter();
   const params = useParams();
   const courseId = params.course_id as string;
+  const { user } = useSelector((state: RootState) => state.auth);
 
   // Generate SVG path for the ENTIRE course
   const pathParts: string[] = [];
@@ -19,6 +22,33 @@ export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
   let globalTopicIndex = 0;
   let prevX = 100;
   let prevY = currentY;
+
+  // Determine the SINGLE active topic for the current user
+  let activeTopicId: string | null = null;
+  let lastCompletedId: string | null = null;
+
+  // 1st pass: find active topic
+  courseData.chapters.forEach((chapter: any) => {
+    chapter.topics.forEach((topic: any) => {
+      const hasProgress = topic.progress && topic.progress.length > 0;
+      if (hasProgress) {
+        if (topic.progress[0].isCompleted) {
+          lastCompletedId = topic.id;
+        } else if (topic.progress[0].isUnlocked && !activeTopicId) {
+          activeTopicId = topic.id;
+        }
+      }
+    });
+  });
+
+  // If no unlocked topic was found, maybe they are at the very beginning
+  if (!activeTopicId && courseData.chapters[0]?.topics[0] && !lastCompletedId) {
+    activeTopicId = courseData.chapters[0].topics[0].id;
+  }
+  // If they completed everything, active topic is the last completed one
+  if (!activeTopicId && lastCompletedId) {
+    activeTopicId = lastCompletedId;
+  }
 
   courseData.chapters.forEach((chapter: any, chIndex: number) => {
     const isLocked = chapter.topics.every(
@@ -140,7 +170,27 @@ export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
               state = 'LOCKED';
             }
 
-            const matchingFriends = friendsProgress.filter((f) => f.activeTopicId === topic.id);
+            // Determine if THIS topic is the active topic for the current user
+            const isUserActive = topic.id === activeTopicId;
+
+            const matchingFriends = [
+              ...friendsProgress.filter(
+                (f) => f.activeTopicId === topic.id || (isFirstNode && !f.activeTopicId),
+              ),
+            ];
+
+            // Add the current user's pin
+            if (user && isUserActive) {
+              // Ensure we don't duplicate if they somehow are in friendsProgress
+              if (!matchingFriends.find((f) => f.id === user.id)) {
+                matchingFriends.push({
+                  id: user.id,
+                  username: user.username + ' (You)',
+                  avatar: user.avatar,
+                  activeTopicId: topic.id,
+                });
+              }
+            }
 
             // Reconstruct positioning relative to the 200px width SVG but placed in the 300px container
             const topPos = item.top - 35; // adjusting because RoadmapNode assumes center rendering? RoadmapNode wrapper has minHeight 80. Let's just place it.

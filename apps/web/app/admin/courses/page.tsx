@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card } from '@sololearning/ui';
 import {
   Plus,
@@ -12,38 +12,74 @@ import {
   TrendingUp,
   Users,
   Star,
+  EyeOff,
 } from 'lucide-react';
 import Link from 'next/link';
-
-// Mock data for courses
-const MOCK_COURSES = [
-  {
-    id: 'python-beginners-course',
-    title: 'Python for Beginners',
-    status: 'Active',
-    enrolled: 4520,
-    rating: 4.8,
-    completionRate: '72%',
-  },
-  {
-    id: 'economics-beginners-course',
-    title: 'Economics for Beginners',
-    status: 'Active',
-    enrolled: 3105,
-    rating: 4.6,
-    completionRate: '65%',
-  },
-  {
-    id: 'product-management-beginners-course',
-    title: 'Product Management for Beginners',
-    status: 'Draft',
-    enrolled: 0,
-    rating: 0,
-    completionRate: '0%',
-  },
-];
+import { useRouter } from 'next/navigation';
 
 export default function CourseManagement() {
+  const router = useRouter();
+  const [data, setData] = useState<{ summary: any; courses: any[] }>({
+    summary: { totalCourses: 0, activeLearners: 0, avgRating: 0, avgCompletion: '0%' },
+    courses: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [query, setQuery] = useState('');
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/admin/courses/stats');
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
+      }
+    } catch (error) {
+      console.error('Failed to load stats', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const toggleStatus = async (courseId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'Active' ? 'Draft' : 'Active';
+    try {
+      await fetch(`/api/admin/courses/${courseId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      fetchStats();
+    } catch (err) {
+      console.error('Failed to toggle status', err);
+    }
+  };
+
+  const deleteCourse = async (courseId: string) => {
+    if (
+      !window.confirm('Are you sure you want to delete this course? This action cannot be undone.')
+    )
+      return;
+    try {
+      await fetch(`/api/admin/courses/${courseId}`, {
+        method: 'DELETE',
+      });
+      fetchStats();
+    } catch (err) {
+      console.error('Failed to delete course', err);
+    }
+  };
+
+  const filteredCourses = data.courses.filter((c) => {
+    if (filter !== 'all' && c.status.toLowerCase() !== filter) return false;
+    if (query && !c.title.toLowerCase().includes(query.toLowerCase())) return false;
+    return true;
+  });
+
   return (
     <div className="p-10 max-w-7xl mx-auto flex flex-col gap-10 min-h-screen">
       {/* Header Section */}
@@ -75,7 +111,9 @@ export default function CourseManagement() {
             <p className="text-sm font-bold text-text-light uppercase tracking-wider">
               Total Courses
             </p>
-            <p className="text-2xl font-black text-text">24</p>
+            <p className="text-2xl font-black text-text">
+              {loading ? '-' : data.summary.totalCourses}
+            </p>
           </div>
         </Card>
 
@@ -90,7 +128,9 @@ export default function CourseManagement() {
             <p className="text-sm font-bold text-text-light uppercase tracking-wider">
               Active Learners
             </p>
-            <p className="text-2xl font-black text-text">18,200</p>
+            <p className="text-2xl font-black text-text">
+              {loading ? '-' : data.summary.activeLearners.toLocaleString()}
+            </p>
           </div>
         </Card>
 
@@ -103,7 +143,9 @@ export default function CourseManagement() {
           </div>
           <div>
             <p className="text-sm font-bold text-text-light uppercase tracking-wider">Avg Rating</p>
-            <p className="text-2xl font-black text-text">4.7</p>
+            <p className="text-2xl font-black text-text">
+              {loading ? '-' : data.summary.avgRating}
+            </p>
           </div>
         </Card>
 
@@ -116,7 +158,9 @@ export default function CourseManagement() {
           </div>
           <div>
             <p className="text-sm font-bold text-text-light uppercase tracking-wider">Completion</p>
-            <p className="text-2xl font-black text-text">64%</p>
+            <p className="text-2xl font-black text-text">
+              {loading ? '-' : data.summary.avgCompletion}
+            </p>
           </div>
         </Card>
       </div>
@@ -133,11 +177,17 @@ export default function CourseManagement() {
             <input
               type="text"
               placeholder="Search courses..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               className="w-full bg-background border border-border rounded-xl py-2.5 pl-10 pr-4 text-text placeholder-text-light focus:outline-none focus:border-primary transition-colors"
             />
           </div>
           <div className="flex gap-3">
-            <select className="bg-background border border-border rounded-xl px-4 py-2.5 text-text font-medium focus:outline-none focus:border-primary transition-colors cursor-pointer">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="bg-background border border-border rounded-xl px-4 py-2.5 text-text font-medium focus:outline-none focus:border-primary transition-colors cursor-pointer"
+            >
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="draft">Draft</option>
@@ -159,47 +209,77 @@ export default function CourseManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50 text-text">
-              {MOCK_COURSES.map((course) => (
-                <tr key={course.id} className="hover:bg-white/5 transition-colors group">
-                  <td className="px-6 py-4 font-bold">{course.title}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        course.status === 'Active'
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'bg-orange-500/10 text-orange-500'
-                      }`}
-                    >
-                      {course.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-text-light">
-                    {course.enrolled.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-text-light flex items-center gap-1">
-                    {course.rating > 0 ? (
-                      <>
-                        <Star size={14} className="text-amber-500" />
-                        {course.rating}
-                      </>
-                    ) : (
-                      '--'
-                    )}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-text-light">{course.completionRate}</td>
-                  <td className="px-6 py-4 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-2 text-text-light hover:text-primary transition-colors bg-background rounded-lg border border-border">
-                      <Eye size={16} />
-                    </button>
-                    <button className="p-2 text-text-light hover:text-blue-500 transition-colors bg-background rounded-lg border border-border">
-                      <Edit2 size={16} />
-                    </button>
-                    <button className="p-2 text-text-light hover:text-red-500 transition-colors bg-background rounded-lg border border-border">
-                      <Trash2 size={16} />
-                    </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-light">
+                    Loading courses...
                   </td>
                 </tr>
-              ))}
+              ) : filteredCourses.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-light">
+                    No courses found.
+                  </td>
+                </tr>
+              ) : (
+                filteredCourses.map((course) => (
+                  <tr key={course.id} className="hover:bg-white/5 transition-colors group">
+                    <td className="px-6 py-4 font-bold max-w-[250px] truncate" title={course.title}>
+                      {course.title}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          course.status === 'Active'
+                            ? 'bg-emerald-500/10 text-emerald-500'
+                            : 'bg-orange-500/10 text-orange-500'
+                        }`}
+                      >
+                        {course.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-medium text-text-light">
+                      {course.enrolled.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-text-light flex items-center gap-1">
+                      {course.rating > 0 ? (
+                        <>
+                          <Star size={14} className="text-amber-500" />
+                          {course.rating}
+                        </>
+                      ) : (
+                        '--'
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-text-light">
+                      {course.completionRate}
+                    </td>
+                    <td className="px-6 py-4 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => toggleStatus(course.id, course.status)}
+                        className="p-2 text-text-light hover:text-primary transition-colors bg-background rounded-lg border border-border"
+                        title={course.status === 'Active' ? 'Make Draft' : 'Make Active'}
+                      >
+                        {course.status === 'Active' ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                      <button
+                        onClick={() => router.push(`/admin/courses/${course.id}/edit`)} // Or wherever edit is
+                        className="p-2 text-text-light hover:text-blue-500 transition-colors bg-background rounded-lg border border-border"
+                        title="Edit Course"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => deleteCourse(course.id)}
+                        className="p-2 text-text-light hover:text-red-500 transition-colors bg-background rounded-lg border border-border"
+                        title="Delete Course"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -208,7 +288,7 @@ export default function CourseManagement() {
   );
 }
 
-// Inline icon component since BookOpen isn't imported from lucide-react in the main import statement above to save lines
+// Inline icon component
 function BookOpenIcon() {
   return (
     <svg

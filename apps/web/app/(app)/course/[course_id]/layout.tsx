@@ -3,16 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Skeleton } from '@sololearning/ui';
-import { MY_COURSES_MOCKDATA } from './mockData';
 import { CourseSidebar } from './components/CourseSidebar';
 import { CourseProvider } from './CourseContext';
-
-const MOCK_FRIENDS_PROGRESS = [
-  { id: 'f1', username: 'Ansh', avatar: '🦊', activeTopicId: 't-1-3' },
-  { id: 'f2', username: 'Nitesh', avatar: '🤖', activeTopicId: 't-1-3' },
-  { id: 'f3', username: 'Prakah', avatar: '🐱', activeTopicId: 't-1-2' },
-  { id: 'f4', username: 'Tushar', avatar: '🦄', activeTopicId: 't-2-1' },
-];
 
 export default function CourseLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -22,17 +14,33 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulating network delay
-    setTimeout(() => {
-      const foundCourse = MY_COURSES_MOCKDATA.find((c) => c.id === courseId);
-      if (foundCourse) {
-        setCourseData(foundCourse);
-        setFriendsProgress(MOCK_FRIENDS_PROGRESS);
-      } else {
+    async function loadData() {
+      try {
+        const [courseRes, friendsRes] = await Promise.all([
+          fetch(`/api/courses/${courseId}/roadmap`),
+          fetch(`/api/courses/${courseId}/friends`),
+        ]);
+
+        if (courseRes.ok) {
+          const course = await courseRes.json();
+          setCourseData(course);
+        } else {
+          setCourseData(null);
+        }
+
+        if (friendsRes.ok) {
+          const friends = await friendsRes.json();
+          setFriendsProgress(friends);
+        }
+      } catch (err) {
+        console.error('Failed to load course data', err);
         setCourseData(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, 500);
+    }
+
+    loadData();
   }, [courseId]);
 
   if (loading) {

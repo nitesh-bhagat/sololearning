@@ -435,18 +435,16 @@ class PvPManager {
 
   private async fetchQuestions(courseOrSubjectId?: string) {
     try {
-      // Try to find lessons associated with the course or subject
+      // Try to find topics associated with the course or subject
       const whereClause = courseOrSubjectId
         ? {
-            topic: {
-              chapter: {
-                courseId: courseOrSubjectId,
-              },
+            chapter: {
+              courseId: courseOrSubjectId,
             },
           }
         : {};
 
-      const lessons = await prisma.lesson.findMany({
+      const topics = await prisma.topic.findMany({
         where: whereClause,
         take: 10,
         select: {
@@ -457,8 +455,8 @@ class PvPManager {
 
       const mcqList: { id: string; question: string; options: string[]; answer: number }[] = [];
 
-      for (const lesson of lessons) {
-        const content = lesson.content as any;
+      for (const topic of topics) {
+        const content = topic.content as any;
         if (Array.isArray(content)) {
           for (const step of content) {
             if (
@@ -468,7 +466,7 @@ class PvPManager {
               typeof step.answer === 'number'
             ) {
               mcqList.push({
-                id: `${lesson.id}-${mcqList.length}`,
+                id: `${topic.id}-${mcqList.length}`,
                 question: step.question,
                 options: step.options,
                 answer: step.answer,

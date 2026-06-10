@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '@sololearning/db';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { cacheMiddleware } from '../middlewares/cache.middleware';
+import { redisService } from '../services/redis';
 
 const router = Router();
 
@@ -21,6 +22,60 @@ router.get('/', cacheMiddleware(3600, 'courses:'), async (req: Request, res: Res
   }
 });
 
+// POST /api/courses
+// Admin creates a new course with its full curriculum (chapters and topics)
+router.post('/', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { title, description, image, tags, totalXp, subject, chapters } = req.body;
+
+    const subjectName = subject || 'General';
+    let subjectRecord = await prisma.subject.findUnique({ where: { title: subjectName } });
+    if (!subjectRecord) {
+      subjectRecord = await prisma.subject.create({
+        data: { title: subjectName, description: `Courses related to ${subjectName}` },
+      });
+    }
+
+    const course = await prisma.course.create({
+      data: {
+        title,
+        description,
+        image,
+        tags: tags || [],
+        totalXp: totalXp || 0,
+        subjectId: subjectRecord.id,
+        chapters: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          create: chapters.map((ch: any, chIdx: number) => ({
+            title: ch.title,
+            description: ch.description,
+            order: chIdx + 1,
+            topics: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              create: ch.topics.map((t: any, tIdx: number) => ({
+                title: t.title,
+                description: t.description,
+                order: tIdx + 1,
+                xpReward: t.metadata?.xp || 50,
+                content: t.content || [],
+                excercise: t.excercise || [],
+              })),
+            },
+          })),
+        },
+      },
+    });
+
+    // Invalidate the cache so the Search Page sees the updated data
+    await redisService.invalidatePattern('courses:*');
+
+    res.json(course);
+  } catch (error) {
+    console.error('Error creating course:', error);
+    res.status(500).json({ error: 'Failed to create course' });
+  }
+});
+
 // GET /api/courses/:courseId/roadmap
 // Fetches the full roadmap (Chapters & Topics) and attaches user progress
 router.get(
@@ -32,6 +87,13 @@ router.get(
       const { courseId } = req.params;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const userId = (req as any).userId;
+
+      // Ensure CourseEnrollment exists or create it
+      await prisma.courseEnrollment.upsert({
+        where: { userId_courseId: { userId, courseId } },
+        update: { lastActiveAt: new Date() },
+        create: { userId, courseId },
+      });
 
       const course = await prisma.course.findUnique({
         where: { id: courseId },
@@ -64,23 +126,95 @@ router.get(
   },
 );
 
-// GET /api/courses/topics/:topicId/lessons
-// Fetches lessons for a specific topic
-router.get('/topics/:topicId/lessons', requireAuth, async (req: Request, res: Response) => {
+// GET /api/courses/:courseId/friends
+// Fetches friends currently learning this course
+router.get('/:courseId/friends', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { topicId } = req.params;
+    const { courseId } = req.params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (req as any).userId;
 
-    const lessons = await prisma.lesson.findMany({
-      where: { topicId },
-      orderBy: { order: 'asc' },
+    // Find accepted friends where friendId or userId matches current user
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [
+          { userId, status: 'ACCEPTED' },
+          { friendId: userId, status: 'ACCEPTED' },
+        ],
+      },
+      include: {
+        user: true,
+        friend: true,
+      },
     });
 
-    res.json(lessons);
+    const friendIds = friendships.map((f) => (f.userId === userId ? f.friendId : f.userId));
+
+    if (friendIds.length === 0) {
+      return res.json([]);
+    }
+
+    // Find enrollments for these friends in this course
+    const enrollments = await prisma.courseEnrollment.findMany({
+      where: {
+        courseId,
+        userId: { in: friendIds },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        currentChapter: {
+          select: {
+            id: true,
+            title: true,
+            order: true,
+          },
+        },
+      },
+    });
+
+    // Format the response and include the latest topic progress
+    const friendsLearning = await Promise.all(
+      enrollments.map(async (e) => {
+        // Find the most recently unlocked topic for this user in this course
+        const latestProgress = await prisma.userProgress.findFirst({
+          where: {
+            userId: e.user.id,
+            topic: {
+              chapter: {
+                courseId,
+              },
+            },
+            isUnlocked: true,
+          },
+          orderBy: [{ topic: { chapter: { order: 'desc' } } }, { topic: { order: 'desc' } }],
+          select: { topicId: true },
+        });
+
+        return {
+          id: e.user.id,
+          username: e.user.username,
+          avatar: e.user.avatar,
+          currentChapter: e.currentChapter ? e.currentChapter.title : 'Just started',
+          lastActiveAt: e.lastActiveAt,
+          activeTopicId: latestProgress ? latestProgress.topicId : null,
+        };
+      }),
+    );
+
+    res.json(friendsLearning);
   } catch (error) {
-    console.error('Error fetching lessons:', error);
-    res.status(500).json({ error: 'Failed to fetch lessons' });
+    console.error('Error fetching friends for course:', error);
+    res.status(500).json({ error: 'Failed to fetch friends for course' });
   }
 });
+
+// (Removed GET /topics/:topicId/lessons as Lesson model is deleted)
 
 // POST /api/courses/seed
 // Generates a robust dummy "Python" course for testing
@@ -145,13 +279,10 @@ router.post('/seed', async (req: Request, res: Response) => {
           },
         });
 
-        // Add dummy lessons to the topic
-        await prisma.lesson.create({
+        // Topics now hold content and exercise
+        await prisma.topic.update({
+          where: { id: topic.id },
           data: {
-            title: `Learn ${topicTitle}`,
-            order: 1,
-            topicId: topic.id,
-            xpReward: 10,
             content: [
               { type: 'info', text: `Welcome to the ${topicTitle} lesson!` },
               {
@@ -279,6 +410,18 @@ router.post('/topics/:topicId/complete', requireAuth, async (req: Request, res: 
           isCompleted: false,
         },
       });
+
+      // Update enrollment currentChapterId
+      await prisma.courseEnrollment.updateMany({
+        where: { userId, courseId: currentTopic.chapter.courseId },
+        data: { currentChapterId: nextTopic.chapterId },
+      });
+    } else {
+      // Completed entire course
+      await prisma.courseEnrollment.updateMany({
+        where: { userId, courseId: currentTopic.chapter.courseId },
+        data: { isCompleted: true },
+      });
     }
 
     // 5. Calculate New Rank and Streak
@@ -348,6 +491,9 @@ router.post('/topics/:topicId/complete', requireAuth, async (req: Request, res: 
         },
       });
     }
+
+    // Invalidate the roadmap cache so the map updates instantly
+    await redisService.invalidatePattern('roadmap:*');
 
     res.json({
       success: true,

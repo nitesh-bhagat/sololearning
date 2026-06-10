@@ -9,6 +9,17 @@ export interface ImageBlockProps {
 }
 
 export function ImageBlock({ url, caption, onChange, readOnly = false }: ImageBlockProps) {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        onChange?.({ url: dataUrl, caption });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   if (readOnly) {
     return (
       <div className="flex flex-col items-center gap-2 w-full my-4">
@@ -47,14 +58,29 @@ export function ImageBlock({ url, caption, onChange, readOnly = false }: ImageBl
         )}
 
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-text-light">Image URL</label>
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => onChange?.({ url: e.target.value, caption })}
-            placeholder="https://example.com/image.png"
-            className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-text placeholder-text-light/50 focus:outline-none focus:border-primary transition-colors text-sm"
-          />
+          <label className="text-xs font-bold text-text-light">Image Source</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={url.startsWith('data:') ? 'Uploaded Image' : url}
+              onChange={(e) => onChange?.({ url: e.target.value, caption })}
+              disabled={url.startsWith('data:')}
+              placeholder="https://example.com/image.png"
+              className="flex-1 w-full bg-background border border-border rounded-xl px-4 py-2.5 text-text placeholder-text-light/50 focus:outline-none focus:border-primary transition-colors text-sm disabled:opacity-50"
+            />
+            <label className="cursor-pointer shrink-0 bg-background border border-border hover:bg-surface text-text-light hover:text-text px-4 py-2.5 rounded-xl transition-colors text-sm font-medium">
+              Upload
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+            </label>
+            {url.startsWith('data:') && (
+              <button
+                onClick={() => onChange?.({ url: '', caption })}
+                className="shrink-0 bg-red-500/10 text-red-500 hover:bg-red-500/20 px-3 py-2.5 rounded-xl transition-colors text-sm font-medium"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">

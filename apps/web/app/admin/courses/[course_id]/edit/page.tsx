@@ -23,7 +23,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { RenderLesson } from '../../../../components/RenderLesson';
+import { RenderLesson } from '../../../../../components/RenderLesson';
 import {
   DndContext,
   DragEndEvent,
@@ -44,7 +44,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { WidgetList } from '../../../../components/WidgetList';
+import { WidgetList } from '../../../../../components/WidgetList';
 import {
   TextBlock,
   MCQBlock,
@@ -200,7 +200,13 @@ const SortableBlockItem = ({ blockData, idx, handleBlockChange, deleteBlock }: a
   );
 };
 
-export default function CreateCoursePage() {
+import { useParams, useRouter } from 'next/navigation';
+
+export default function EditCoursePage() {
+  const params = useParams();
+  const router = useRouter();
+  const courseId = params.course_id as string;
+
   const [courseTitle, setCourseTitle] = useState('');
   const [courseDescription, setCourseDescription] = useState('');
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -218,6 +224,42 @@ export default function CreateCoursePage() {
   const [activeBlock, setActiveBlock] = useState<{ chapterId: string; topicId: string } | null>(
     null,
   );
+
+  useEffect(() => {
+    async function loadCourse() {
+      try {
+        const res = await fetch(`/api/admin/courses/${courseId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCourseTitle(data.title || '');
+          setCourseDescription(data.description || '');
+          setCourseImage(data.image || '');
+          setCourseTags(data.tags || []);
+          setCourseXP(data.totalXp || 0);
+
+          if (data.chapters) {
+            setChapters(
+              data.chapters.map((ch: any) => ({
+                id: ch.id,
+                title: ch.title,
+                topics: ch.topics.map((t: any) => ({
+                  id: t.id,
+                  title: t.title,
+                  type: 'block',
+                  content: t.content || [],
+                  excercise: t.excercise || [],
+                  metadata: { difficulty: 'Beginner', xp: t.xpReward || 50 },
+                })),
+              })),
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch course', err);
+      }
+    }
+    loadCourse();
+  }, [courseId]);
 
   useEffect(() => {
     if (activeBlock) {
@@ -475,33 +517,32 @@ export default function CreateCoursePage() {
       const payload = {
         title: courseTitle,
         description: courseDescription,
-        image: courseImage, // Currently just a local blob URL, needs real upload logic in prod
+        image: courseImage,
         tags: courseTags,
-        subject: 'General', // Defaulting for now
+        subject: 'General',
         totalXp: chapters.reduce((total, ch) => {
           return total + ch.topics.reduce((tTotal, t) => tTotal + (t.metadata?.xp || 50), 0);
         }, 0),
         chapters,
       };
 
-      const res = await fetch('/api/courses', {
-        method: 'POST',
+      const res = await fetch(`/api/admin/courses/${courseId}/full`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          // Note: Add Authorization header if requireAuth needs it
         },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to save course');
+        throw new Error('Failed to update course');
       }
 
-      const data = await res.json();
-      alert(`Course created successfully! ID: ${data.id}`);
+      alert(`Course updated successfully!`);
+      router.push('/admin/courses');
     } catch (error) {
       console.error(error);
-      alert('Error saving course. Please try again.');
+      alert('Error updating course. Please try again.');
     }
   };
 
@@ -591,7 +632,7 @@ export default function CreateCoursePage() {
             <ArrowLeft size={20} className="text-text-light" />
           </Link>
           <div>
-            <h1 className="text-3xl font-black text-text tracking-tight">Create New Course</h1>
+            <h1 className="text-3xl font-black text-text tracking-tight">Edit Course</h1>
             <p className="text-text-light text-sm mt-1">
               Design the curriculum and add content blocks.
             </p>
