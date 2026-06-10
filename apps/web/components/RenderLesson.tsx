@@ -84,7 +84,7 @@ export function RenderLesson({
 
         // Play victory sound
         try {
-          const audio = new Audio('/sound/prize_won.mp3');
+          const audio = new Audio('/sounds/prize_won.mp3');
           audio.volume = 0.5;
           audio.play().catch((e) => console.log('Audio play failed:', e));
         } catch (e) {

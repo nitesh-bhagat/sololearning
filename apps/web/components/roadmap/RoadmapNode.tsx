@@ -75,7 +75,12 @@ export function RoadmapNode({ title, state, index, friends = [], onClick }: Road
               }}
             >
               {friends.map((friend) => (
-                <div key={friend.id} className={styles.friendPinWrapper}>
+                <motion.div
+                  key={friend.id}
+                  layoutId={`pin-${friend.id}`}
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.8 }}
+                  className={styles.friendPinWrapper}
+                >
                   <div
                     style={{
                       width: '32px',
@@ -124,7 +129,7 @@ export function RoadmapNode({ title, state, index, friends = [], onClick }: Road
 
                   {/* Hover Popup */}
                   <div className={styles.friendPopup}>{friend.username}</div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}

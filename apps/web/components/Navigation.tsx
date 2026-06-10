@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
@@ -47,6 +47,7 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const dispatch = useDispatch();
   const { user, isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
+  const [continueData, setContinueData] = useState<any>(null);
 
   const visibleNavLinks = [...navLinks];
   if (user && user.role === 'ADMIN') {
@@ -72,6 +73,24 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
     };
     fetchSession();
   }, [dispatch]);
+
+  // Fetch continue learning data
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchContinueData = async () => {
+        try {
+          const res = await fetch('/api/users/me/continue');
+          if (res.ok) {
+            const data = await res.json();
+            setContinueData(data);
+          }
+        } catch (err) {
+          console.error('Error fetching continue learning', err);
+        }
+      };
+      fetchContinueData();
+    }
+  }, [isAuthenticated, pathname]); // Re-fetch when pathname changes to keep it updated
 
   const handleLogout = async () => {
     try {
@@ -130,28 +149,32 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
 
         <div className="flex flex-row"></div>
         {/* Continue Learning Block */}
-        <div className="mb-8 px-2">
-          <div className="text-[0.8rem] font-bold text-text-light uppercase mb-2 tracking-wide">
-            Continue Learning
-          </div>
-          <Link href="/map/python" className="no-underline">
-            <div
-              className={`flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-b-4 transition-all duration-200 cursor-pointer hover:bg-white/10 ${
-                pathname?.includes('course') ? 'border-emerald-800' : 'border-white/10'
-              }`}
-            >
-              <PlayCircle size={36} className="text-primary shrink-0" />
-              <div className="flex-1 overflow-hidden">
-                <div className="text-[0.95rem] font-bold text-text whitespace-nowrap overflow-hidden text-ellipsis">
-                  Variables & Data
-                </div>
-                <div className="text-[0.8rem] text-text-light whitespace-nowrap overflow-hidden text-ellipsis">
-                  Python Basics
+        {continueData && (
+          <div className="mb-8 px-2">
+            <div className="text-[0.8rem] font-bold text-text-light uppercase mb-2 tracking-wide">
+              Continue Learning
+            </div>
+            <Link href={`/course/${continueData.courseId}`} className="no-underline">
+              <div
+                className={`flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-b-4 transition-all duration-200 cursor-pointer hover:bg-white/10 ${
+                  pathname?.includes(continueData.courseId)
+                    ? 'border-emerald-800'
+                    : 'border-white/10'
+                }`}
+              >
+                <PlayCircle size={36} className="text-primary shrink-0" />
+                <div className="flex-1 overflow-hidden">
+                  <div className="text-[0.95rem] font-bold text-text whitespace-nowrap overflow-hidden text-ellipsis">
+                    {continueData.topicTitle}
+                  </div>
+                  <div className="text-[0.8rem] text-text-light whitespace-nowrap overflow-hidden text-ellipsis">
+                    {continueData.courseTitle}
+                  </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        </div>
+            </Link>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           {visibleNavLinks.map((link) => {

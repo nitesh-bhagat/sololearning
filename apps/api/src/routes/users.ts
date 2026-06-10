@@ -72,6 +72,46 @@ router.get('/me/courses', requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch my courses' });
   }
 });
+
+// GET /api/users/me/continue
+// Get the last active topic for the "Continue Learning" tile
+router.get('/me/continue', requireAuth, async (req: Request, res: Response) => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (req as any).userId;
+
+    const lastProgress = await prisma.userProgress.findFirst({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        topic: {
+          include: {
+            chapter: {
+              include: {
+                course: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!lastProgress) {
+      return res.json(null);
+    }
+
+    res.json({
+      courseId: lastProgress.topic.chapter.course.id,
+      courseTitle: lastProgress.topic.chapter.course.title,
+      topicId: lastProgress.topic.id,
+      topicTitle: lastProgress.topic.title,
+      chapterTitle: lastProgress.topic.chapter.title,
+    });
+  } catch (error) {
+    console.error('Error fetching continue learning:', error);
+    res.status(500).json({ error: 'Failed to fetch continue learning' });
+  }
+});
 // GET /api/users/:username
 // Get user profile by username
 router.get('/:username', requireAuth, async (req: Request, res: Response) => {

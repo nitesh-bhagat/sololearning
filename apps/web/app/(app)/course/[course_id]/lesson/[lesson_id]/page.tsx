@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 import { updateUserStats } from '../../../../../../store/slices/authSlice';
 
 export default function LessonPage() {
-  const { courseData } = useCourse();
+  const { courseData, refreshCourseData } = useCourse();
   const params = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -30,6 +30,11 @@ export default function LessonPage() {
             streak: data.newStreak,
           }),
         );
+
+        // Fetch the updated roadmap from the server immediately so the pin moves automatically
+        if (refreshCourseData) {
+          await refreshCourseData();
+        }
       }
     } catch (err) {
       console.error('Error completing topic:', err);

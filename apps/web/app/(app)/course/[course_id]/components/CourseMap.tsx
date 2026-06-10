@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../../store';
@@ -7,9 +7,10 @@ import { RoadmapNode, NodeState } from '../../../../../components/roadmap/Roadma
 interface CourseMapProps {
   courseData: any;
   friendsProgress: any[];
+  isCompact?: boolean;
 }
 
-export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
+export function CourseMap({ courseData, friendsProgress, isCompact = false }: CourseMapProps) {
   const router = useRouter();
   const params = useParams();
   const courseId = params.course_id as string;
@@ -49,6 +50,19 @@ export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
   if (!activeTopicId && lastCompletedId) {
     activeTopicId = lastCompletedId;
   }
+
+  // Scroll to active topic whenever it changes
+  useEffect(() => {
+    if (activeTopicId) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`node-${activeTopicId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300); // small delay to ensure DOM is ready and layout is settled
+      return () => clearTimeout(timer);
+    }
+  }, [activeTopicId]);
 
   courseData.chapters.forEach((chapter: any, chIndex: number) => {
     const isLocked = chapter.topics.every(
@@ -140,7 +154,9 @@ export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
                 style={{ top: `${item.top}px` }}
               >
                 <div className="bg-background px-8 py-6 rounded-[2rem] shadow-xl flex flex-col items-center max-w-[90%] mx-auto">
-                  <h2 className="text-3xl font-black text-text mb-2 tracking-tight text-center">
+                  <h2
+                    className={`${isCompact ? 'text-xl' : 'text-3xl'} font-black text-text mb-2 tracking-tight text-center`}
+                  >
                     {item.title}
                   </h2>
                   <div className="inline-block px-4 py-1.5 bg-surface border border-border/50 rounded-full text-text-light font-bold text-xs tracking-[1px] uppercase shadow-sm">
@@ -197,6 +213,7 @@ export function CourseMap({ courseData, friendsProgress }: CourseMapProps) {
 
             return (
               <div
+                id={`node-${topic.id}`}
                 key={`topic-${topic.id}`}
                 className="absolute pointer-events-auto z-10"
                 style={{
