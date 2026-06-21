@@ -13,10 +13,18 @@ interface RoadmapNodeProps {
   state: NodeState;
   index: number;
   friends?: Array<{ id: string; username: string; avatar: string }>;
+  isCurrentView?: boolean;
   onClick: () => void;
 }
 
-export function RoadmapNode({ title, state, index, friends = [], onClick }: RoadmapNodeProps) {
+export function RoadmapNode({
+  title,
+  state,
+  index,
+  friends = [],
+  isCurrentView = false,
+  onClick,
+}: RoadmapNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -52,8 +60,17 @@ export function RoadmapNode({ title, state, index, friends = [], onClick }: Road
             className={styles.nodeButton}
             onClick={onClick}
             disabled={state === 'LOCKED'}
-            whileHover={state !== 'LOCKED' ? { scale: 1.1 } : {}}
+            animate={{ scale: isCurrentView ? 1.25 : 1 }}
+            whileHover={state !== 'LOCKED' ? { scale: isCurrentView ? 1.3 : 1.1 } : {}}
             whileTap={state !== 'LOCKED' ? { scale: 0.95 } : {}}
+            style={
+              isCurrentView
+                ? {
+                    boxShadow:
+                      '0 0 0 6px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.5)',
+                  }
+                : {}
+            }
           >
             <div className={styles.iconContainer}>
               {state === 'COMPLETED' && <Check size={32} color="white" />}

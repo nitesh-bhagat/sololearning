@@ -57,8 +57,13 @@ export default function LessonPage() {
   }
 
   let nextLessonId: string | null = null;
+  let wasAlreadyCompleted = false;
+
   if (currentChapterIndex !== -1 && currentTopicIndex !== -1) {
     const currentChapter = courseData.chapters[currentChapterIndex];
+
+    wasAlreadyCompleted = activeTopic?.progress?.[0]?.isCompleted === true;
+
     if (currentTopicIndex < currentChapter.topics.length - 1) {
       nextLessonId = currentChapter.topics[currentTopicIndex + 1].id;
     } else if (currentChapterIndex < courseData.chapters.length - 1) {
@@ -70,15 +75,15 @@ export default function LessonPage() {
 
   return (
     <RenderLesson
+      key={activeTopic.id}
       topic={activeTopic}
       onExit={() => router.push(`/course/${courseId}`)}
-      onNextLesson={() => {
-        if (nextLessonId) {
-          router.push(`/course/${courseId}/lesson/${nextLessonId}`);
-        }
-      }}
+      onNextLesson={
+        nextLessonId ? () => router.push(`/course/${courseId}/lesson/${nextLessonId}`) : undefined
+      }
       hasNextLesson={!!nextLessonId}
       onComplete={handleComplete}
+      wasAlreadyCompleted={wasAlreadyCompleted}
     />
   );
 }

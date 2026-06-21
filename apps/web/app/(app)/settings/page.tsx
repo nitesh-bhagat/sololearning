@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import styles from './settings.module.css';
-import { User, Bell, Lock, Palette } from 'lucide-react';
+import { User, Bell, Lock, Palette, LogOut } from 'lucide-react';
 import { Button } from '@sololearning/ui/src/components/button/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { logoutUser } from '../../../store/slices/authSlice';
 
 export default function SettingsPage() {
+  const dispatch = useDispatch();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Account');
   const [toggles, setToggles] = useState({
     emailNotifs: true,
@@ -18,136 +23,177 @@ export default function SettingsPage() {
     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Settings</h1>
-        <p className={styles.subtitle}>Manage your account preferences and configurations.</p>
-      </div>
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      dispatch(logoutUser());
+      router.push('/login');
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-      <div className={styles.layout}>
-        <div className={styles.sidebar}>
-          <div
-            className={`${styles.navItem} ${activeTab === 'Account' ? styles.active : ''}`}
-            onClick={() => setActiveTab('Account')}
-          >
-            <User size={20} /> Account
-          </div>
-          <div
-            className={`${styles.navItem} ${activeTab === 'Notifications' ? styles.active : ''}`}
-            onClick={() => setActiveTab('Notifications')}
-          >
-            <Bell size={20} /> Notifications
-          </div>
-          <div
-            className={`${styles.navItem} ${activeTab === 'Privacy' ? styles.active : ''}`}
-            onClick={() => setActiveTab('Privacy')}
-          >
-            <Lock size={20} /> Privacy
-          </div>
-          <div
-            className={`${styles.navItem} ${activeTab === 'Appearance' ? styles.active : ''}`}
-            onClick={() => setActiveTab('Appearance')}
-          >
-            <Palette size={20} /> Appearance
-          </div>
+  const tabs = [
+    { id: 'Account', icon: User, label: 'Account' },
+    { id: 'Notifications', icon: Bell, label: 'Notifications' },
+    { id: 'Privacy', icon: Lock, label: 'Privacy' },
+    { id: 'Appearance', icon: Palette, label: 'Appearance' },
+  ];
+
+  const renderToggle = (key: keyof typeof toggles) => {
+    const isOn = toggles[key];
+    return (
+      <div
+        className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+          isOn ? 'bg-primary' : 'bg-surface border border-border'
+        }`}
+        onClick={() => handleToggle(key)}
+      >
+        <motion.div
+          className="w-6 h-6 bg-white rounded-full shadow-md"
+          layout
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          animate={{ x: isOn ? 24 : 0 }}
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex w-full min-h-screen bg-background overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-[30%] min-w-[300px] border-r border-border bg-surface p-8 flex flex-col gap-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-black text-text m-0 tracking-tight">Settings</h1>
+          <p className="text-text-light text-sm">
+            Manage your account preferences and configurations.
+          </p>
         </div>
 
-        <div className={styles.content}>
-          {activeTab === 'Notifications' && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <Bell className="text-blue-500" /> Notification Preferences
-              </h2>
+        <div className="flex flex-col gap-2">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-4 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                  isActive
+                    ? 'bg-emerald-500 text-white border-b-4 border-emerald-900 hover:text-white'
+                    : 'text-text-light hover:bg-white/5 hover:text-primary'
+                }`}
+              >
+                <Icon size={20} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
 
-              <div className={styles.settingRow}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingName}>Email Notifications</div>
-                  <div className={styles.settingDesc}>
-                    Receive daily updates and course reminders via email.
+        <div className="mt-auto pt-4">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors font-bold"
+          >
+            <LogOut size={20} />
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-12 bg-background flex flex-col items-center">
+        <div className="w-full max-w-3xl">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="bg-surface/50 backdrop-blur-md border border-border rounded-[2rem] p-8 shadow-xl flex flex-col gap-8"
+            >
+              {activeTab === 'Notifications' && (
+                <>
+                  <h2 className="text-2xl font-bold text-text flex items-center gap-3 m-0">
+                    <Bell className="text-primary" /> Notification Preferences
+                  </h2>
+
+                  <div className="flex justify-between items-center pb-6 border-b border-border/50">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-lg font-bold text-text">Email Notifications</div>
+                      <div className="text-sm text-text-light">
+                        Receive daily updates and course reminders via email.
+                      </div>
+                    </div>
+                    {renderToggle('emailNotifs')}
                   </div>
-                </div>
-                <div
-                  className={`${styles.toggle} ${toggles.emailNotifs ? styles.on : ''}`}
-                  onClick={() => handleToggle('emailNotifs')}
-                >
-                  <div className={styles.toggleKnob} />
-                </div>
-              </div>
 
-              <div className={styles.settingRow}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingName}>Push Notifications</div>
-                  <div className={styles.settingDesc}>
-                    Get instantly notified when someone challenges you.
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-lg font-bold text-text">Push Notifications</div>
+                      <div className="text-sm text-text-light">
+                        Get instantly notified when someone challenges you.
+                      </div>
+                    </div>
+                    {renderToggle('pushNotifs')}
                   </div>
-                </div>
-                <div
-                  className={`${styles.toggle} ${toggles.pushNotifs ? styles.on : ''}`}
-                  onClick={() => handleToggle('pushNotifs')}
-                >
-                  <div className={styles.toggleKnob} />
-                </div>
-              </div>
-            </div>
-          )}
+                </>
+              )}
 
-          {activeTab === 'Privacy' && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <Lock className="text-blue-500" /> Privacy Settings
-              </h2>
+              {activeTab === 'Privacy' && (
+                <>
+                  <h2 className="text-2xl font-bold text-text flex items-center gap-3 m-0">
+                    <Lock className="text-primary" /> Privacy Settings
+                  </h2>
 
-              <div className={styles.settingRow}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingName}>Public Profile</div>
-                  <div className={styles.settingDesc}>
-                    Allow other users to see your ranking and activity.
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-lg font-bold text-text">Public Profile</div>
+                      <div className="text-sm text-text-light">
+                        Allow other users to see your ranking and activity.
+                      </div>
+                    </div>
+                    {renderToggle('publicProfile')}
                   </div>
-                </div>
-                <div
-                  className={`${styles.toggle} ${toggles.publicProfile ? styles.on : ''}`}
-                  onClick={() => handleToggle('publicProfile')}
-                >
-                  <div className={styles.toggleKnob} />
-                </div>
-              </div>
-            </div>
-          )}
+                </>
+              )}
 
-          {activeTab === 'Account' && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <User className="text-blue-500" /> Account Details
-              </h2>
-              <div className="text-zinc-400">
-                Manage your password, linked accounts, and billing information here.
-              </div>
-              <Button variant="secondary" style={{ width: 'fit-content', marginTop: '1rem' }}>
-                Change Password
-              </Button>
-            </div>
-          )}
+              {activeTab === 'Account' && (
+                <>
+                  <h2 className="text-2xl font-bold text-text flex items-center gap-3 m-0">
+                    <User className="text-primary" /> Account Details
+                  </h2>
+                  <div className="text-text-light text-base">
+                    Manage your password, linked accounts, and billing information here.
+                  </div>
+                  <div className="mt-4">
+                    <Button variant="secondary" className="w-fit">
+                      Change Password
+                    </Button>
+                  </div>
+                </>
+              )}
 
-          {activeTab === 'Appearance' && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <Palette className="text-blue-500" /> Theme
-              </h2>
-              <div className={styles.settingRow}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingName}>Dark Mode</div>
-                  <div className={styles.settingDesc}>Use the dark theme for the application.</div>
-                </div>
-                <div
-                  className={`${styles.toggle} ${toggles.darkMode ? styles.on : ''}`}
-                  onClick={() => handleToggle('darkMode')}
-                >
-                  <div className={styles.toggleKnob} />
-                </div>
-              </div>
-            </div>
-          )}
+              {activeTab === 'Appearance' && (
+                <>
+                  <h2 className="text-2xl font-bold text-text flex items-center gap-3 m-0">
+                    <Palette className="text-primary" /> Theme
+                  </h2>
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-lg font-bold text-text">Dark Mode</div>
+                      <div className="text-sm text-text-light">
+                        Use the dark theme for the application.
+                      </div>
+                    </div>
+                    {renderToggle('darkMode')}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

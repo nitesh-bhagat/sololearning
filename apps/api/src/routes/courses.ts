@@ -312,7 +312,19 @@ router.post('/topics/:topicId/complete', requireAuth, async (req: Request, res: 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userId = (req as any).userId;
 
-    // 1. Mark current topic as completed
+    // 1. Check if it was already completed
+    const existingProgress = await prisma.userProgress.findUnique({
+      where: {
+        userId_topicId: {
+          userId,
+          topicId,
+        },
+      },
+    });
+
+    const wasAlreadyCompleted = existingProgress?.isCompleted === true;
+
+    // 2. Mark current topic as completed
     const currentTopicProgress = await prisma.userProgress.upsert({
       where: {
         userId_topicId: {
@@ -333,7 +345,7 @@ router.post('/topics/:topicId/complete', requireAuth, async (req: Request, res: 
       },
     });
 
-    // 2. Fetch the current topic to find its order and chapter
+    // 3. Fetch the current topic to find its order and chapter
     const currentTopic = await prisma.topic.findUnique({
       where: { id: topicId },
       include: {
@@ -430,6 +442,18 @@ router.post('/topics/:topicId/complete', requireAuth, async (req: Request, res: 
       return res.status(404).json({ error: 'User not found' });
     }
 
+    if (wasAlreadyCompleted) {
+      // Return early with current stats, no XP awarded
+      return res.json({
+        message: 'Topic already completed',
+        wasAlreadyCompleted: true,
+        topicId: currentTopic.id,
+        totalXp: currentUser.xp,
+        newRank: currentUser.rank,
+        newStreak: currentUser.streak,
+      });
+    }
+
     const newXp = currentUser.xp + currentTopic.xpReward;
     let newRank = currentUser.rank;
 
@@ -506,6 +530,75 @@ router.post('/topics/:topicId/complete', requireAuth, async (req: Request, res: 
   } catch (error) {
     console.error('Error completing topic:', error);
     res.status(500).json({ error: 'Failed to complete topic' });
+  }
+});
+
+// POST /api/courses/:courseId/reset
+// Resets the user's progress for a specific course
+router.post('/:courseId/reset', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (req as any).userId;
+
+    // 1. Get all topic IDs for this course
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        chapters: {
+          include: {
+            topics: true,
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const topicIds = course.chapters.flatMap((chapter) => chapter.topics.map((t) => t.id));
+
+    // 2. Delete all user progress for these topics
+    if (topicIds.length > 0) {
+      await prisma.userProgress.deleteMany({
+        where: {
+          userId,
+          topicId: { in: topicIds },
+        },
+      });
+    }
+
+    // 3. Reset course enrollment
+    const firstChapterId = course.chapters.length > 0 ? course.chapters[0].id : null;
+    await prisma.courseEnrollment.updateMany({
+      where: { userId, courseId },
+      data: {
+        isCompleted: false,
+        currentChapterId: firstChapterId,
+      },
+    });
+
+    // 4. Set the first topic as unlocked
+    if (firstChapterId && course.chapters[0].topics.length > 0) {
+      const firstTopicId = course.chapters[0].topics[0].id;
+      await prisma.userProgress.create({
+        data: {
+          userId,
+          topicId: firstTopicId,
+          isUnlocked: true,
+          isCompleted: false,
+        },
+      });
+    }
+
+    // Invalidate roadmap cache
+    await redisService.invalidatePattern('roadmap:*');
+
+    res.json({ success: true, message: 'Course progress reset successfully' });
+  } catch (error) {
+    console.error('Error resetting course progress:', error);
+    res.status(500).json({ error: 'Failed to reset course progress' });
   }
 });
 

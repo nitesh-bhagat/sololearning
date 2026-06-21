@@ -39,6 +39,7 @@ export interface RenderLessonProps {
   onNextLesson?: () => void;
   hasNextLesson?: boolean;
   onComplete?: () => void;
+  wasAlreadyCompleted?: boolean;
 }
 
 export function RenderLesson({
@@ -47,7 +48,9 @@ export function RenderLesson({
   onNextLesson,
   hasNextLesson = false,
   onComplete,
+  wasAlreadyCompleted,
 }: RenderLessonProps) {
+  const [initiallyCompleted] = useState(wasAlreadyCompleted);
   const [currentStep, setCurrentStep] = useState(0);
   const [validationState, setValidationState] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [isAnswerComplete, setIsAnswerComplete] = useState(false);
@@ -70,6 +73,14 @@ export function RenderLesson({
 
   const handleCheck = () => {
     setValidationState(isAnswerCorrect ? 'correct' : 'wrong');
+
+    try {
+      const audio = new Audio(isAnswerCorrect ? '/sounds/success.mp3' : '/sounds/wrong.mp3');
+      audio.volume = 0.5;
+      audio.play().catch((e) => console.log('Audio play failed:', e));
+    } catch (e) {
+      console.error('Audio initialization failed', e);
+    }
   };
 
   const handleNext = () => {
@@ -81,6 +92,15 @@ export function RenderLesson({
       // If we just reached victory step
       if (nextStep === totalSteps) {
         if (onComplete) onComplete();
+
+        if (initiallyCompleted) {
+          if (hasNextLesson && onNextLesson) {
+            onNextLesson();
+          } else {
+            onExit();
+          }
+          return;
+        }
 
         // Play victory sound
         try {
@@ -147,6 +167,17 @@ export function RenderLesson({
   };
 
   if (isVictoryStep) {
+    if (initiallyCompleted) {
+      return (
+        <div className="w-full min-h-[calc(100vh-var(--topbar-height,0px))] flex flex-col items-center justify-center p-8 bg-background">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-text-light font-bold animate-pulse">
+            {hasNextLesson ? 'Loading next lesson...' : 'Returning to course map...'}
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="w-full min-h-dvh flex flex-col items-center justify-center p-8 bg-background relative overflow-hidden">
         {/* Victory Confetti / Background Effects */}
@@ -171,15 +202,17 @@ export function RenderLesson({
             rewards.
           </p>
 
-          <div className="flex items-center gap-3 px-8 py-4 bg-surface border border-border rounded-2xl mb-12 shadow-lg transform hover:scale-105 transition-transform">
-            <Award size={32} className="text-yellow-400" />
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-text-light uppercase tracking-wider">
-                XP Gained
-              </span>
-              <span className="text-3xl font-black text-text">+{topic.metadata?.xp || 10}</span>
+          {!initiallyCompleted && (
+            <div className="flex items-center gap-3 px-8 py-4 bg-surface border border-border rounded-2xl mb-12 shadow-lg transform hover:scale-105 transition-transform">
+              <Award size={32} className="text-yellow-400" />
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-text-light uppercase tracking-wider">
+                  XP Gained
+                </span>
+                <span className="text-3xl font-black text-text">+{topic.metadata?.xp || 10}</span>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex flex-col gap-4 w-full">
             {hasNextLesson && onNextLesson ? (

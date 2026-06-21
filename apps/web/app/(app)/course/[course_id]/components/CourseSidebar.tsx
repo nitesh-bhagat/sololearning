@@ -3,15 +3,42 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
-import { ChevronLeft, Share2, Lock, ChevronRight } from 'lucide-react';
+import { ChevronLeft, Share2, Lock, ChevronRight, MoreVertical, AlertTriangle } from 'lucide-react';
 import { useCourse } from '../CourseContext';
 
 export function CourseSidebar() {
-  const { courseData, friendsProgress } = useCourse();
+  const { courseData, friendsProgress, refreshCourseData } = useCourse();
   const params = useParams();
   const courseId = params.course_id as string;
   const searchParams = useSearchParams();
   const activeChapterId = searchParams.get('chapter') || courseData.chapters[0]?.id;
+  const [showMenu, setShowMenu] = React.useState(false);
+  const [showResetWarning, setShowResetWarning] = React.useState(false);
+  const [isResetting, setIsResetting] = React.useState(false);
+
+  const handleResetCourse = async () => {
+    setIsResetting(true);
+    try {
+      const res = await fetch(`/api/courses/${courseId}/reset`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setShowResetWarning(false);
+        if (refreshCourseData) {
+          await refreshCourseData();
+        }
+        if (window.location.pathname.includes('/lesson/')) {
+          window.location.href = `/course/${courseId}`;
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (e) {
+      console.error('Failed to reset course', e);
+    }
+    setIsResetting(false);
+  };
 
   // Scroll the active chapter tile into view when it changes
   useEffect(() => {
@@ -35,7 +62,26 @@ export function CourseSidebar() {
             <span className="text-text-light text-sm leading-relaxed">Go back to courses</span>
           </div>
         </Link>
-        <Share2 className="cursor-pointer" />
+        <div className="flex items-center gap-4 relative">
+          <Share2 className="cursor-pointer text-text hover:text-primary transition-colors" />
+          <MoreVertical
+            className="cursor-pointer text-text hover:text-primary transition-colors"
+            onClick={() => setShowMenu(!showMenu)}
+          />
+          {showMenu && (
+            <div className="absolute top-8 right-0 bg-surface border border-border rounded-xl shadow-xl p-2 w-48 z-50 animate-in fade-in zoom-in-95 duration-200">
+              <button
+                className="w-full text-left px-4 py-2 text-red-500 font-bold hover:bg-red-500/10 rounded-lg transition-colors"
+                onClick={() => {
+                  setShowMenu(false);
+                  setShowResetWarning(true);
+                }}
+              >
+                Reset Course
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <div>
         <h1 className="text-2xl font-black text-text mb-2 leading-tight">{courseData.title}</h1>
@@ -162,6 +208,41 @@ export function CourseSidebar() {
           );
         })}
       </div>
+
+      {/* Reset Warning Modal */}
+      {showResetWarning && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-surface border border-red-500/30 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(239,68,68,0.15)] flex flex-col gap-6 animate-in zoom-in-95 duration-300">
+            <div className="flex items-center gap-4 text-red-500">
+              <div className="p-3 bg-red-500/10 rounded-full">
+                <AlertTriangle size={32} />
+              </div>
+              <h2 className="text-2xl font-black m-0">Reset Course?</h2>
+            </div>
+            <p className="text-text-light text-base leading-relaxed">
+              Are you sure you want to completely wipe your progress for{' '}
+              <strong className="text-text">{courseData.title}</strong>? This action cannot be
+              undone, though you will keep your total XP.
+            </p>
+            <div className="flex gap-4 mt-2">
+              <button
+                className="flex-1 py-3 px-4 rounded-xl font-bold bg-surface border border-border text-text hover:bg-white/5 transition-colors"
+                onClick={() => setShowResetWarning(false)}
+                disabled={isResetting}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 py-3 px-4 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center disabled:opacity-50"
+                onClick={handleResetCourse}
+                disabled={isResetting}
+              >
+                {isResetting ? 'Resetting...' : 'Confirm Reset'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

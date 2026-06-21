@@ -32,7 +32,23 @@ export default function LoginPage() {
       }
 
       dispatch(setUser(data.user));
-      router.push('/map/python');
+
+      try {
+        const continueRes = await fetch('/api/users/me/continue', {
+          credentials: 'include',
+        });
+        if (continueRes.ok) {
+          const continueData = await continueRes.json();
+          if (continueData && continueData.courseId) {
+            router.push(`/course/${continueData.courseId}`);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch continue data', e);
+      }
+
+      router.push('/');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);

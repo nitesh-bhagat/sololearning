@@ -49,6 +49,14 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
   const [continueData, setContinueData] = useState<any>(null);
 
+  const formatNumber = (num: number | undefined | null) => {
+    if (num === undefined || num === null) return '0';
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    }
+    return num.toString();
+  };
+
   const visibleNavLinks = [...navLinks];
   if (user && user.role === 'ADMIN') {
     visibleNavLinks.push({ href: '/admin', label: 'Admin', icon: Shield });
@@ -114,35 +122,47 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
       <nav className="hidden md:flex fixed top-0 left-0 w-[20%] h-screen bg-surface border-r border-border py-8 px-4 flex-col z-50">
         {/* stats */}
         <div className="flex items-center justify-start gap-2 mb-4">
-          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+          <div
+            className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg"
+            title="2"
+          >
             <span className="text-xs">Lives</span>
             <div className="flex flex-row gap-1 items-center font-black text-red-500">
               <HeartIcon size={15} />
-              <span className="text-sm">2</span>
+              <span className="text-sm">{formatNumber(2)}</span>
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+          <div
+            className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg"
+            title={user?.xp?.toString() || '0'}
+          >
             <span className="text-xs">XP</span>
             <div className="flex flex-row gap-1 items-center font-black text-yellow-500">
               <ZapIcon size={15} />
-              <span className="text-sm">{user?.xp || 0}</span>
+              <span className="text-sm">{formatNumber(user?.xp)}</span>
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+          <div
+            className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg"
+            title="123"
+          >
             <span className="text-xs">Streak</span>
             <div className="flex flex-row gap-1 items-center font-black text-orange-500">
               <Flame size={15} />
-              <span className="text-sm">123</span>
+              <span className="text-sm">{formatNumber(123)}</span>
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg">
+          <div
+            className="flex flex-col items-center justify-center p-2 bg-white/5 shadow-md rounded-lg"
+            title="109"
+          >
             <span className="text-xs">Mission</span>
             <div className="flex flex-row gap-1 items-center font-black text-green-500">
               <CalendarDays size={15} />
-              <span className="text-sm">109</span>
+              <span className="text-sm">{formatNumber(109)}</span>
             </div>
           </div>
         </div>
@@ -156,18 +176,25 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
             </div>
             <Link href={`/course/${continueData.courseId}`} className="no-underline">
               <div
-                className={`flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-b-4 transition-all duration-200 cursor-pointer hover:bg-white/10 ${
+                className={`flex items-center gap-3 p-3 rounded-2xl border border-b-4 transition-all duration-200 cursor-pointer ${
                   pathname?.includes(continueData.courseId)
-                    ? 'border-emerald-800'
-                    : 'border-white/10'
+                    ? 'bg-emerald-500 border-emerald-900 text-white hover:bg-emerald-400'
+                    : 'bg-white/5 border-white/10 hover:bg-white/10'
                 }`}
               >
-                <PlayCircle size={36} className="text-primary shrink-0" />
+                <PlayCircle
+                  size={36}
+                  className={`shrink-0 ${pathname?.includes(continueData.courseId) ? 'text-white' : 'text-primary'}`}
+                />
                 <div className="flex-1 overflow-hidden">
-                  <div className="text-[0.95rem] font-bold text-text whitespace-nowrap overflow-hidden text-ellipsis">
+                  <div
+                    className={`text-[0.95rem] font-bold whitespace-nowrap overflow-hidden text-ellipsis ${pathname?.includes(continueData.courseId) ? 'text-white' : 'text-text'}`}
+                  >
                     {continueData.topicTitle}
                   </div>
-                  <div className="text-[0.8rem] text-text-light whitespace-nowrap overflow-hidden text-ellipsis">
+                  <div
+                    className={`text-[0.8rem] whitespace-nowrap overflow-hidden text-ellipsis ${pathname?.includes(continueData.courseId) ? 'text-emerald-100' : 'text-text-light'}`}
+                  >
                     {continueData.courseTitle}
                   </div>
                 </div>
@@ -200,30 +227,19 @@ export function NavigationLayout({ children }: { children: React.ReactNode }) {
           {isLoading ? (
             <div className="text-text-light">Loading...</div>
           ) : isAuthenticated && user ? (
-            <div className="p-2 bg-white/5 border border-white/5 rounded-2xl flex flex-col gap-2">
-              <Link
-                href="/profile"
-                className="no-underline flex items-center gap-2.5 p-1 rounded-xl transition-colors hover:bg-white/10"
-              >
-                <div className="w-9 h-9 rounded-full bg-background border-2 border-primary flex items-center justify-center text-lg shrink-0">
-                  {user.avatar || user.username.charAt(0).toUpperCase()}
+            <Link
+              href="/profile"
+              className="w-full flex items-center gap-3 p-2 rounded-xl transition-colors hover:bg-white/5 no-underline"
+            >
+              <div className="w-9 h-9 rounded-full bg-background border-2 border-primary flex items-center justify-center text-lg shrink-0">
+                {user.avatar || user.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <div className="font-bold text-[0.9rem] text-text whitespace-nowrap overflow-hidden text-ellipsis">
+                  {user.username}
                 </div>
-                <div className="flex-1 overflow-hidden">
-                  <div className="font-bold text-[0.9rem] text-text whitespace-nowrap overflow-hidden text-ellipsis">
-                    {user.username}
-                  </div>
-                  <span className="text-sm">some@gmail.com</span>
-                </div>
-              </Link>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className="w-full text-[0.85rem] p-1.5 text-text-light flex justify-start items-center"
-              >
-                <LogOut size={16} className="mr-2" />
-                Sign Out
-              </Button>
-            </div>
+              </div>
+            </Link>
           ) : (
             <Link href="/login" className="no-underline">
               <Button variant="primary" fullWidth>

@@ -4,11 +4,13 @@ import { Plus, Trash2, GripVertical, Info } from 'lucide-react';
 
 export interface PutInOrderBlockProps {
   items: string[];
+  caption?: string;
   explanation?: string;
   explanationSnippet?: string;
   explanationTip?: string;
   onChange?: (data: {
     items: string[];
+    caption?: string;
     explanation?: string;
     explanationSnippet?: string;
     explanationTip?: string;
@@ -30,6 +32,7 @@ const SHAKE_CSS = `
 
 export function PutInOrderBlock({
   items = [],
+  caption = '',
   explanation = '',
   explanationSnippet = '',
   explanationTip = '',
@@ -108,6 +111,7 @@ export function PutInOrderBlock({
         <h4 className="text-xl font-bold text-text tracking-tight mb-4">
           Put the following in correct order:
         </h4>
+        {caption && <p className="text-base text-text-light mb-4">{caption}</p>}
 
         <div className="flex flex-col gap-3">
           {orderedItems.map((item, idx) => (
@@ -172,6 +176,7 @@ export function PutInOrderBlock({
         <h4 className="text-sm font-bold text-text-light mb-2">
           Put the following in correct order:
         </h4>
+        {caption && <p className="text-sm text-text-light italic mb-2">{caption}</p>}
         {items.map((item, idx) => (
           <div
             key={idx}
@@ -207,24 +212,25 @@ export function PutInOrderBlock({
   const updateItem = (index: number, value: string) => {
     const newItems = [...items];
     newItems[index] = value;
-    onChange?.({ items: newItems, explanation, explanationSnippet, explanationTip });
+    onChange?.({ items: newItems, caption, explanation, explanationSnippet, explanationTip });
   };
 
   const addItem = () => {
-    onChange?.({ items: [...items, ''], explanation, explanationSnippet, explanationTip });
+    onChange?.({ items: [...items, ''], caption, explanation, explanationSnippet, explanationTip });
   };
 
   const removeItem = (index: number) => {
     onChange?.({
       items: items.filter((_, i) => i !== index),
+      caption,
       explanation,
       explanationSnippet,
       explanationTip,
     });
   };
 
-  const updateExplanationField = (field: string, value: string) => {
-    onChange?.({ items, explanation, explanationSnippet, explanationTip, [field]: value });
+  const updateField = (field: string, value: string) => {
+    onChange?.({ items, caption, explanation, explanationSnippet, explanationTip, [field]: value });
   };
 
   return (
@@ -269,10 +275,20 @@ export function PutInOrderBlock({
       </div>
 
       <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
-        <label className="text-xs font-bold text-text-light">Explanation Text (Optional)</label>
+        <label className="text-xs font-bold text-text-light">Caption (Optional)</label>
+        <input
+          type="text"
+          value={caption || ''}
+          onChange={(e) => updateField('caption', e.target.value)}
+          placeholder="Provide context for this sorting exercise..."
+          className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-text placeholder-text-light/50 focus:outline-none focus:border-primary transition-colors text-sm"
+        />
+        <label className="text-xs font-bold text-text-light mt-2">
+          Explanation Text (Optional)
+        </label>
         <textarea
           value={explanation}
-          onChange={(e) => updateExplanationField('explanation', e.target.value)}
+          onChange={(e) => updateField('explanation', e.target.value)}
           placeholder="Explain the correct order..."
           rows={2}
           className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-text placeholder-text-light/50 focus:outline-none focus:border-primary transition-colors resize-y text-sm"
@@ -280,7 +296,7 @@ export function PutInOrderBlock({
         <label className="text-xs font-bold text-text-light mt-1">Code Snippet (Optional)</label>
         <textarea
           value={explanationSnippet || ''}
-          onChange={(e) => updateExplanationField('explanationSnippet', e.target.value)}
+          onChange={(e) => updateField('explanationSnippet', e.target.value)}
           placeholder="Provide a relevant code snippet if needed..."
           rows={3}
           className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-text placeholder-text-light/50 focus:outline-none focus:border-primary transition-colors resize-y text-sm font-mono"
@@ -289,7 +305,7 @@ export function PutInOrderBlock({
         <input
           type="text"
           value={explanationTip || ''}
-          onChange={(e) => updateExplanationField('explanationTip', e.target.value)}
+          onChange={(e) => updateField('explanationTip', e.target.value)}
           placeholder="A quick tip or rule of thumb..."
           className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-text placeholder-text-light/50 focus:outline-none focus:border-primary transition-colors text-sm"
         />

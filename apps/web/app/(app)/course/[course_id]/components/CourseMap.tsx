@@ -14,6 +14,7 @@ export function CourseMap({ courseData, friendsProgress, isCompact = false }: Co
   const router = useRouter();
   const params = useParams();
   const courseId = params.course_id as string;
+  const currentLessonId = params.lesson_id as string | undefined;
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Generate SVG path for the ENTIRE course
@@ -227,6 +228,7 @@ export function CourseMap({ courseData, friendsProgress, isCompact = false }: Co
                   state={state}
                   index={item.globalIndex}
                   friends={matchingFriends}
+                  isCurrentView={topic.id === currentLessonId}
                   onClick={() => {
                     if (state !== 'LOCKED') {
                       router.push(`/course/${courseId}/lesson/${topic.id}`);
